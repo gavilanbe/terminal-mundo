@@ -1,0 +1,28 @@
+<!doctype html>
+<html><head><meta charset="utf-8"><style>
+html,body{margin:0;padding:0}
+body{width:512px;height:512px;background:#101317;display:grid;place-items:center;font-family:"SF Mono",ui-monospace,Menlo,monospace}
+.wrap{display:flex;flex-direction:column;align-items:center;gap:26px}
+.tile{
+  width:300px;height:250px;display:grid;place-items:center;font-size:170px;line-height:1;
+  background:linear-gradient(#232A34,#1B212A 48%,#151A21 52%,#1D242D);
+  border-radius:28px;position:relative;
+  box-shadow:inset 0 2px 0 rgba(255,255,255,.08), 0 10px 24px rgba(0,0,0,.6);
+}
+.tile::after{content:"";position:absolute;left:0;right:0;top:50%;height:3px;background:rgba(0,0,0,.5)}
+.word{display:flex;gap:7px}
+.ch{
+  width:44px;height:56px;display:grid;place-items:center;
+  font-size:34px;font-weight:700;color:#FFC53D;
+  background:linear-gradient(#232A34,#1B212A 48%,#151A21 52%,#1D242D);
+  border-radius:8px;position:relative;
+  box-shadow:inset 0 1px 0 rgba(255,255,255,.07);
+}
+.ch::after{content:"";position:absolute;left:0;right:0;top:50%;height:2px;background:rgba(0,0,0,.5)}
+</style></head>
+<body>
+  <div class="wrap">
+    <div class="tile">🌍</div>
+    <div class="word"><span class="ch">M</span><span class="ch">U</span><span class="ch">N</span><span class="ch">D</span><span class="ch">O</span></div>
+  </div>
+</body></html>

@@ -1,0 +1,634 @@
+<!doctype html>
+<html lang="es">
+<head>
+<meta charset="utf-8">
+<meta name="viewport" content="width=device-width, initial-scale=1, viewport-fit=cover, user-scalable=no">
+<meta name="theme-color" content="#101317">
+<meta name="mobile-web-app-capable" content="yes">
+<meta name="apple-mobile-web-app-capable" content="yes">
+<meta name="apple-mobile-web-app-status-bar-style" content="black-translucent">
+<meta name="apple-mobile-web-app-title" content="Mundo">
+<title>Terminal Mundo</title>
+<link rel="manifest" href="manifest.webmanifest">
+<link rel="icon" href="icon-192.png">
+<link rel="apple-touch-icon" href="apple-touch-icon.png">
+<style>
+:root{
+  --bg:#101317;          /* asfalto de pista */
+  --bg2:#0B0E11;
+  --tile:#1B212A;        /* flap */
+  --tile-hi:#232A34;
+  --ink:#EDE8DA;         /* marfil de las letras solari */
+  --amber:#FFC53D;       /* ámbar de destinos */
+  --ok:#37C871;
+  --bad:#F25555;
+  --mute:#6B7686;
+  --mono:"SF Mono", ui-monospace, "Roboto Mono", Menlo, Consolas, monospace;
+}
+*{box-sizing:border-box;margin:0;padding:0;-webkit-tap-highlight-color:transparent}
+html{-webkit-text-size-adjust:100%}
+body{
+  background:var(--bg2);
+  color:var(--ink);
+  font-family:var(--mono);
+  min-height:100dvh;
+  touch-action:manipulation;
+  -webkit-font-smoothing:antialiased;
+}
+button{font:inherit;color:inherit;background:none;border:0;cursor:pointer;touch-action:manipulation;user-select:none;-webkit-user-select:none}
+
+/* ---------- cabecera ---------- */
+header{
+  position:sticky;top:0;z-index:10;
+  background:var(--bg);
+  border-bottom:2px solid var(--amber);
+  padding:calc(10px + env(safe-area-inset-top)) 16px 10px;
+}
+.hrow{display:flex;justify-content:space-between;align-items:baseline;gap:8px}
+.brand{font-size:15px;font-weight:700;letter-spacing:.18em}
+.brand b{color:var(--amber)}
+.hsub{display:flex;justify-content:space-between;align-items:center;margin-top:2px}
+.hsub small{color:var(--mute);font-size:10px;letter-spacing:.3em}
+.clock{font-size:15px;font-variant-numeric:tabular-nums;color:var(--amber)}
+#sndbtn{color:var(--mute);font-size:12px;padding:2px 6px;letter-spacing:.1em}
+#sndbtn.on{color:var(--ink)}
+
+main{
+  max-width:560px;margin:0 auto;
+  padding:14px 14px calc(24px + env(safe-area-inset-bottom));
+}
+
+/* ---------- filas de panel ---------- */
+.board{display:flex;flex-direction:column;gap:8px}
+.rowbtn{
+  display:grid;grid-template-columns:auto 1fr auto;align-items:center;gap:12px;
+  background:var(--tile);
+  border-radius:8px;padding:14px 14px;
+  box-shadow:inset 0 1px 0 rgba(255,255,255,.05), 0 2px 4px rgba(0,0,0,.4);
+  position:relative;overflow:hidden;text-align:left;width:100%;
+}
+.rowbtn::after{ /* costura del flap */
+  content:"";position:absolute;left:0;right:0;top:50%;height:1px;
+  background:rgba(0,0,0,.45);pointer-events:none;
+}
+.rowbtn:active{transform:translateY(1px)}
+.gate{
+  font-size:11px;color:var(--bg2);background:var(--amber);
+  border-radius:4px;padding:3px 6px;font-weight:700;letter-spacing:.08em;
+  min-width:34px;text-align:center;
+}
+.dest{font-size:15px;letter-spacing:.12em;font-weight:700}
+.dest small{display:block;font-weight:400;font-size:10px;color:var(--mute);letter-spacing:.25em;margin-bottom:3px}
+.status{font-size:10px;letter-spacing:.15em;color:var(--ok)}
+.blink{animation:blink 1.2s steps(2) infinite}
+@keyframes blink{50%{opacity:.25}}
+
+/* ---------- chips de región ---------- */
+.chips{display:flex;gap:6px;overflow-x:auto;padding:2px 0 12px;scrollbar-width:none}
+.chips::-webkit-scrollbar{display:none}
+.chip{
+  flex:0 0 auto;font-size:11px;letter-spacing:.12em;color:var(--mute);
+  border:1px solid #2A323D;border-radius:99px;padding:7px 12px;
+}
+.chip.sel{color:var(--bg2);background:var(--amber);border-color:var(--amber);font-weight:700}
+
+.secline{display:flex;justify-content:space-between;align-items:baseline;margin:16px 2px 8px}
+.secline h2{font-size:11px;letter-spacing:.3em;color:var(--mute);font-weight:400}
+.statstrip{
+  display:flex;justify-content:space-between;gap:8px;margin-top:14px;
+  font-size:11px;letter-spacing:.12em;color:var(--mute);
+}
+.statstrip b{color:var(--amber);font-weight:700}
+
+/* ---------- pantalla de pregunta ---------- */
+.qtop{display:flex;justify-content:space-between;align-items:center;margin-bottom:14px;font-size:11px;letter-spacing:.15em}
+.qtop .back{color:var(--mute);padding:6px 8px 6px 0}
+.qtop .prog{color:var(--ink)}
+.qtop .strk{color:var(--amber)}
+.qcard{
+  background:var(--bg);border-radius:10px;padding:18px 14px 20px;margin-bottom:14px;
+  border:1px solid #1E252E;
+  box-shadow:0 4px 14px rgba(0,0,0,.35);
+}
+.eyebrow{font-size:10px;letter-spacing:.3em;color:var(--mute);text-align:center;margin-bottom:4px}
+.qlabel{font-size:12px;letter-spacing:.2em;color:var(--amber);text-align:center;margin-bottom:16px}
+.flapbox{display:flex;flex-wrap:wrap;justify-content:center;gap:.35em;min-height:2.6em}
+.word{display:inline-flex}
+.ch{
+  display:inline-grid;place-items:center;
+  min-width:.78em;height:1.35em;padding:0 .06em;
+  font-size:clamp(19px,5.6vw,28px);font-weight:700;letter-spacing:0;
+  background:linear-gradient(var(--tile-hi) 0%,var(--tile) 48%,#151A21 52%,#1D242D 100%);
+  border-radius:.14em;margin:.045em;position:relative;
+  box-shadow:inset 0 1px 0 rgba(255,255,255,.07), 0 1px 2px rgba(0,0,0,.5);
+}
+.ch::after{content:"";position:absolute;left:0;right:0;top:50%;height:1px;background:rgba(0,0,0,.55)}
+.flagbig{
+  display:grid;place-items:center;margin:0 auto;
+  width:150px;height:118px;font-size:78px;line-height:1;
+  background:linear-gradient(var(--tile-hi),var(--tile) 48%,#151A21 52%,#1D242D);
+  border-radius:12px;position:relative;
+  box-shadow:inset 0 1px 0 rgba(255,255,255,.07), 0 3px 8px rgba(0,0,0,.5);
+  animation:flapdrop .45s cubic-bezier(.2,.9,.3,1.2);
+  transform-origin:top center;
+}
+.flagbig::after{content:"";position:absolute;left:0;right:0;top:50%;height:1px;background:rgba(0,0,0,.45)}
+@keyframes flapdrop{from{transform:rotateX(-80deg);opacity:0}to{transform:none;opacity:1}}
+
+.opts{display:flex;flex-direction:column;gap:8px}
+.opt .dest{font-size:14px}
+.opt .flg{font-size:20px;margin-right:2px}
+.opt.ok{background:#14301F;outline:1px solid var(--ok)}
+.opt.ok .status{color:var(--ok)}
+.opt.bad{background:#33191B;outline:1px solid var(--bad)}
+.opt.bad .gate{background:var(--bad)}
+.opt.ok .gate{background:var(--ok)}
+.opt.dim{opacity:.45}
+.opt:disabled{cursor:default}
+.shake{animation:shake .3s}
+@keyframes shake{25%{transform:translateX(-4px)}75%{transform:translateX(4px)}}
+
+/* ---------- tarjeta de embarque (resultados) ---------- */
+.pass{
+  background:var(--ink);color:#20242B;border-radius:12px;overflow:hidden;
+  margin-top:10px;
+  box-shadow:0 10px 30px rgba(0,0,0,.5);
+  animation:flapdrop .5s cubic-bezier(.2,.9,.3,1.15);transform-origin:top center;
+}
+.pass .ptop{
+  background:var(--amber);color:#20242B;padding:12px 16px;
+  display:flex;justify-content:space-between;align-items:center;
+  font-size:11px;letter-spacing:.2em;font-weight:700;
+}
+.pass .pbody{padding:18px 16px;position:relative}
+.pass .pgrid{display:grid;grid-template-columns:1fr 1fr;gap:14px 10px}
+.pass .plabel{font-size:9px;letter-spacing:.25em;color:#8A8676;margin-bottom:3px}
+.pass .pval{font-size:22px;font-weight:700;font-variant-numeric:tabular-nums}
+.pass .pval small{font-size:12px;font-weight:400}
+.stamp{
+  position:absolute;right:14px;top:12px;transform:rotate(-12deg);
+  border:2.5px solid;border-radius:8px;padding:5px 10px;
+  font-size:12px;font-weight:700;letter-spacing:.2em;opacity:.85;
+}
+.stamp.ok{color:#2E8B57;border-color:#2E8B57}
+.stamp.meh{color:#B0533B;border-color:#B0533B}
+.perf{border-top:2px dashed #B9B4A4;position:relative;margin:0 10px}
+.barcode{
+  height:44px;margin:14px 16px 16px;border-radius:2px;
+  background:repeating-linear-gradient(90deg,#20242B 0 2px,transparent 2px 4px,#20242B 4px 7px,transparent 7px 8px,#20242B 8px 9px,transparent 9px 13px);
+}
+.resbtns{display:flex;gap:8px;margin-top:16px}
+.bigbtn{
+  flex:1;background:var(--tile);border-radius:8px;padding:15px;
+  font-size:13px;letter-spacing:.15em;font-weight:700;text-align:center;
+  box-shadow:inset 0 1px 0 rgba(255,255,255,.05);
+}
+.bigbtn.amber{background:var(--amber);color:var(--bg2)}
+.bigbtn:active{transform:translateY(1px)}
+
+/* ---------- pasaporte ---------- */
+.regrow{margin-bottom:14px}
+.regrow .rl{display:flex;justify-content:space-between;font-size:11px;letter-spacing:.15em;margin-bottom:5px}
+.regrow .rl b{color:var(--ink)}
+.regrow .rl span{color:var(--mute)}
+.bar{height:8px;background:var(--tile);border-radius:99px;overflow:hidden}
+.bar i{display:block;height:100%;background:var(--amber);border-radius:99px;transition:width .6s ease}
+.flaggrid{display:grid;grid-template-columns:repeat(auto-fill,minmax(44px,1fr));gap:6px;margin-top:8px}
+.fcell{
+  font-size:24px;display:grid;place-items:center;aspect-ratio:1;
+  background:var(--tile);border-radius:8px;opacity:.35;
+}
+.fcell.l1{opacity:.6}.fcell.l2{opacity:.85}
+.fcell.dom{opacity:1;outline:1px solid var(--amber)}
+#peek{
+  position:fixed;left:50%;transform:translateX(-50%);
+  bottom:calc(14px + env(safe-area-inset-bottom));
+  background:var(--tile);border:1px solid #2A323D;border-radius:99px;
+  padding:10px 18px;font-size:13px;letter-spacing:.08em;white-space:nowrap;
+  box-shadow:0 6px 20px rgba(0,0,0,.5);z-index:20;
+  opacity:0;pointer-events:none;transition:opacity .25s;
+}
+#peek.show{opacity:1}
+#peek b{color:var(--amber)}
+.danger{color:var(--mute);font-size:11px;letter-spacing:.15em;padding:12px;width:100%;text-align:center;margin-top:18px}
+.danger.armed{color:var(--bad)}
+
+@media (prefers-reduced-motion:reduce){
+  *{animation:none!important;transition:none!important}
+}
+</style>
+</head>
+<body>
+<header>
+  <div class="hrow">
+    <div class="brand">TERMINAL <b>MUNDO</b></div>
+    <div class="clock" id="clock">--:--</div>
+  </div>
+  <div class="hsub">
+    <small>SALIDAS · DEPARTURES</small>
+    <button id="sndbtn" aria-label="Sonido">♪ ON</button>
+  </div>
+</header>
+<main id="app"></main>
+<div id="peek" role="status"></div>
+
+<script>
+"use strict";
+/* ============ DATOS · [iso, país, capital, región] ============ */
+const R = {eu:"EUROPA", am:"AMÉRICA", as:"ASIA", af:"ÁFRICA", oc:"OCEANÍA"};
+const DATA = [
+// EUROPA
+["ES","España","Madrid","eu"],["FR","Francia","París","eu"],["PT","Portugal","Lisboa","eu"],
+["AD","Andorra","Andorra la Vieja","eu"],["IT","Italia","Roma","eu"],["DE","Alemania","Berlín","eu"],
+["GB","Reino Unido","Londres","eu"],["IE","Irlanda","Dublín","eu"],["BE","Bélgica","Bruselas","eu"],
+["NL","Países Bajos","Ámsterdam","eu"],["LU","Luxemburgo","Luxemburgo","eu"],["CH","Suiza","Berna","eu"],
+["AT","Austria","Viena","eu"],["DK","Dinamarca","Copenhague","eu"],["NO","Noruega","Oslo","eu"],
+["SE","Suecia","Estocolmo","eu"],["FI","Finlandia","Helsinki","eu"],["IS","Islandia","Reikiavik","eu"],
+["PL","Polonia","Varsovia","eu"],["CZ","Chequia","Praga","eu"],["SK","Eslovaquia","Bratislava","eu"],
+["HU","Hungría","Budapest","eu"],["SI","Eslovenia","Liubliana","eu"],["HR","Croacia","Zagreb","eu"],
+["BA","Bosnia y Herzegovina","Sarajevo","eu"],["RS","Serbia","Belgrado","eu"],["ME","Montenegro","Podgorica","eu"],
+["MK","Macedonia del Norte","Skopie","eu"],["AL","Albania","Tirana","eu"],["GR","Grecia","Atenas","eu"],
+["BG","Bulgaria","Sofía","eu"],["RO","Rumanía","Bucarest","eu"],["MD","Moldavia","Chisináu","eu"],
+["UA","Ucrania","Kiev","eu"],["BY","Bielorrusia","Minsk","eu"],["LT","Lituania","Vilna","eu"],
+["LV","Letonia","Riga","eu"],["EE","Estonia","Tallin","eu"],["RU","Rusia","Moscú","eu"],
+["MT","Malta","La Valeta","eu"],["CY","Chipre","Nicosia","eu"],["MC","Mónaco","Mónaco","eu"],
+["SM","San Marino","San Marino","eu"],["LI","Liechtenstein","Vaduz","eu"],["VA","Ciudad del Vaticano","Ciudad del Vaticano","eu"],
+// AMÉRICA
+["CA","Canadá","Ottawa","am"],["US","Estados Unidos","Washington D. C.","am"],["MX","México","Ciudad de México","am"],
+["GT","Guatemala","Ciudad de Guatemala","am"],["BZ","Belice","Belmopán","am"],["HN","Honduras","Tegucigalpa","am"],
+["SV","El Salvador","San Salvador","am"],["NI","Nicaragua","Managua","am"],["CR","Costa Rica","San José","am"],
+["PA","Panamá","Ciudad de Panamá","am"],["CU","Cuba","La Habana","am"],["JM","Jamaica","Kingston","am"],
+["HT","Haití","Puerto Príncipe","am"],["DO","República Dominicana","Santo Domingo","am"],["BS","Bahamas","Nasáu","am"],
+["TT","Trinidad y Tobago","Puerto España","am"],["BB","Barbados","Bridgetown","am"],["DM","Dominica","Roseau","am"],
+["GD","Granada","Saint George","am"],["LC","Santa Lucía","Castries","am"],["VC","San Vicente y las Granadinas","Kingstown","am"],
+["KN","San Cristóbal y Nieves","Basseterre","am"],["AG","Antigua y Barbuda","Saint John","am"],
+["CO","Colombia","Bogotá","am"],["VE","Venezuela","Caracas","am"],["GY","Guyana","Georgetown","am"],
+["SR","Surinam","Paramaribo","am"],["EC","Ecuador","Quito","am"],["PE","Perú","Lima","am"],
+["BR","Brasil","Brasilia","am"],["BO","Bolivia","Sucre","am"],["PY","Paraguay","Asunción","am"],
+["CL","Chile","Santiago","am"],["AR","Argentina","Buenos Aires","am"],["UY","Uruguay","Montevideo","am"],
+// ASIA
+["TR","Turquía","Ankara","as"],["GE","Georgia","Tiflis","as"],["AM","Armenia","Ereván","as"],
+["AZ","Azerbaiyán","Bakú","as"],["KZ","Kazajistán","Astaná","as"],["UZ","Uzbekistán","Taskent","as"],
+["TM","Turkmenistán","Asjabad","as"],["KG","Kirguistán","Biskek","as"],["TJ","Tayikistán","Dusambé","as"],
+["AF","Afganistán","Kabul","as"],["PK","Pakistán","Islamabad","as"],["IN","India","Nueva Delhi","as"],
+["NP","Nepal","Katmandú","as"],["BT","Bután","Timbu","as"],["BD","Bangladés","Daca","as"],
+["LK","Sri Lanka","Colombo","as"],["MV","Maldivas","Malé","as"],["CN","China","Pekín","as"],
+["MN","Mongolia","Ulán Bator","as"],["KP","Corea del Norte","Pionyang","as"],["KR","Corea del Sur","Seúl","as"],
+["JP","Japón","Tokio","as"],["TW","Taiwán","Taipéi","as"],["MM","Myanmar","Naipyidó","as"],
+["TH","Tailandia","Bangkok","as"],["LA","Laos","Vientián","as"],["KH","Camboya","Nom Pen","as"],
+["VN","Vietnam","Hanói","as"],["MY","Malasia","Kuala Lumpur","as"],["SG","Singapur","Singapur","as"],
+["ID","Indonesia","Yakarta","as"],["BN","Brunéi","Bandar Seri Begawan","as"],["PH","Filipinas","Manila","as"],
+["TL","Timor Oriental","Dili","as"],["IR","Irán","Teherán","as"],["IQ","Irak","Bagdad","as"],
+["SY","Siria","Damasco","as"],["LB","Líbano","Beirut","as"],["IL","Israel","Jerusalén","as"],
+["JO","Jordania","Amán","as"],["SA","Arabia Saudí","Riad","as"],["YE","Yemen","Saná","as"],
+["OM","Omán","Mascate","as"],["AE","Emiratos Árabes Unidos","Abu Dabi","as"],["QA","Catar","Doha","as"],
+["BH","Baréin","Manama","as"],["KW","Kuwait","Kuwait","as"],
+// ÁFRICA
+["MA","Marruecos","Rabat","af"],["DZ","Argelia","Argel","af"],["TN","Túnez","Túnez","af"],
+["LY","Libia","Trípoli","af"],["EG","Egipto","El Cairo","af"],["SD","Sudán","Jartum","af"],
+["SS","Sudán del Sur","Yuba","af"],["ET","Etiopía","Adís Abeba","af"],["ER","Eritrea","Asmara","af"],
+["DJ","Yibuti","Yibuti","af"],["SO","Somalia","Mogadiscio","af"],["KE","Kenia","Nairobi","af"],
+["UG","Uganda","Kampala","af"],["RW","Ruanda","Kigali","af"],["BI","Burundi","Gitega","af"],
+["TZ","Tanzania","Dodoma","af"],["MZ","Mozambique","Maputo","af"],["MW","Malaui","Lilongüe","af"],
+["ZM","Zambia","Lusaka","af"],["ZW","Zimbabue","Harare","af"],["BW","Botsuana","Gaborone","af"],
+["NA","Namibia","Windhoek","af"],["ZA","Sudáfrica","Pretoria","af"],["LS","Lesoto","Maseru","af"],
+["SZ","Esuatini","Mbabane","af"],["MG","Madagascar","Antananarivo","af"],["KM","Comoras","Moroni","af"],
+["MU","Mauricio","Port Louis","af"],["SC","Seychelles","Victoria","af"],["AO","Angola","Luanda","af"],
+["CD","República Democrática del Congo","Kinsasa","af"],["CG","República del Congo","Brazzaville","af"],
+["GA","Gabón","Libreville","af"],["GQ","Guinea Ecuatorial","Malabo","af"],["CM","Camerún","Yaundé","af"],
+["CF","República Centroafricana","Bangui","af"],["TD","Chad","Yamena","af"],["NE","Níger","Niamey","af"],
+["NG","Nigeria","Abuya","af"],["BJ","Benín","Porto-Novo","af"],["TG","Togo","Lomé","af"],
+["GH","Ghana","Acra","af"],["CI","Costa de Marfil","Yamusukro","af"],["LR","Liberia","Monrovia","af"],
+["SL","Sierra Leona","Freetown","af"],["GN","Guinea","Conakri","af"],["GW","Guinea-Bisáu","Bisáu","af"],
+["SN","Senegal","Dakar","af"],["GM","Gambia","Banjul","af"],["MR","Mauritania","Nuakchot","af"],
+["ML","Malí","Bamako","af"],["BF","Burkina Faso","Uagadugú","af"],["CV","Cabo Verde","Praia","af"],
+["ST","Santo Tomé y Príncipe","Santo Tomé","af"],
+// OCEANÍA
+["AU","Australia","Camberra","oc"],["NZ","Nueva Zelanda","Wellington","oc"],["PG","Papúa Nueva Guinea","Port Moresby","oc"],
+["FJ","Fiyi","Suva","oc"],["SB","Islas Salomón","Honiara","oc"],["VU","Vanuatu","Port Vila","oc"],
+["WS","Samoa","Apia","oc"],["TO","Tonga","Nukualofa","oc"],["TV","Tuvalu","Funafuti","oc"],
+["KI","Kiribati","Tarawa del Sur","oc"],["NR","Nauru","Yaren","oc"],["MH","Islas Marshall","Majuro","oc"],
+["FM","Micronesia","Palikir","oc"],["PW","Palaos","Ngerulmud","oc"],
+];
+const flag = iso => String.fromCodePoint(...[...iso].map(c=>0x1F1E6+c.charCodeAt(0)-65));
+const MODES = [
+  {id:"flag",    n:"BANDERA → PAÍS",  q:"¿DE QUÉ PAÍS ES ESTA BANDERA?"},
+  {id:"capital", n:"PAÍS → CAPITAL",  q:"¿CUÁL ES SU CAPITAL?"},
+  {id:"country", n:"CAPITAL → PAÍS",  q:"¿DE QUÉ PAÍS ES CAPITAL?"},
+  {id:"mix",     n:"VUELO MIXTO",     q:""},
+];
+const QS_PER_ROUND = 10;
+
+/* ============ ESTADO ============ */
+const S = load();
+function load(){
+  try{
+    const s = JSON.parse(localStorage.getItem("tm.state"));
+    if(s && s.stats) return s;
+  }catch(e){}
+  return {millas:0, best:0, rondas:0, region:"all", sound:true, stats:{}};
+}
+function save(){ localStorage.setItem("tm.state", JSON.stringify(S)); }
+const key = (iso,m)=> iso+":"+m;
+const lvl = (iso,m)=> (S.stats[key(iso,m)]||0);
+function bump(iso,m,ok){
+  const k = key(iso,m);
+  S.stats[k] = Math.max(0, Math.min(3, (S.stats[k]||0) + (ok?1:-1)));
+}
+const domScore = iso => lvl(iso,"flag")+lvl(iso,"capital")+lvl(iso,"country"); // 0..9
+const isDom = iso => lvl(iso,"flag")>=2 && lvl(iso,"capital")>=2 && lvl(iso,"country")>=2;
+const pool = ()=> S.region==="all" ? DATA : DATA.filter(c=>c[3]===S.region);
+const fmt = n => n.toLocaleString("es-ES");
+
+/* ============ AUDIO (clacks solari, sin assets) ============ */
+let AC=null;
+function ac(){ if(!AC) AC = new (window.AudioContext||window.webkitAudioContext)(); return AC; }
+function blip(freq,dur,type,gain,when=0){
+  if(!S.sound) return;
+  try{
+    const c=ac(), o=c.createOscillator(), g=c.createGain(), t=c.currentTime+when;
+    o.type=type; o.frequency.value=freq; o.connect(g); g.connect(c.destination);
+    g.gain.setValueAtTime(gain,t); g.gain.exponentialRampToValueAtTime(.0001,t+dur);
+    o.start(t); o.stop(t+dur+.02);
+  }catch(e){}
+}
+const tick = ()=> blip(2400,.015,"square",.015);
+const good = ()=> { blip(660,.09,"square",.05); blip(990,.14,"square",.05,.09); };
+const bad  = ()=> blip(160,.22,"sawtooth",.06);
+
+/* ============ SPLIT-FLAP ============ */
+const REDUCED = matchMedia("(prefers-reduced-motion: reduce)").matches;
+const GLYPHS = "ABCDEFGHIJKLMNÑOPQRSTUVWXYZ";
+let flapTimers = [];
+function clearFlaps(){ flapTimers.forEach(clearInterval); flapTimers=[]; }
+function flapText(el, text){
+  clearFlaps();
+  el.innerHTML = "";
+  let idx = 0;
+  for(const word of text.toUpperCase().split(" ")){
+    const w = document.createElement("span"); w.className = "word";
+    for(const chr of word){
+      const s = document.createElement("span"); s.className = "ch";
+      w.appendChild(s);
+      if(REDUCED){ s.textContent = chr; continue; }
+      const spins = 3 + Math.min(10, Math.floor(idx*0.9)); // efecto ola
+      let n = 0;
+      const t = setInterval(()=>{
+        n++;
+        if(n>=spins){ s.textContent = chr; clearInterval(t); }
+        else { s.textContent = GLYPHS[Math.floor(Math.random()*GLYPHS.length)]; if(n%2) tick(); }
+      }, 45);
+      flapTimers.push(t);
+      idx++;
+    }
+    el.appendChild(w);
+  }
+}
+
+/* ============ NAVEGACIÓN / PANTALLAS ============ */
+const app = document.getElementById("app");
+const peek = document.getElementById("peek");
+let round = null, peekT = null;
+
+function esc(s){ return s.replace(/&/g,"&amp;").replace(/</g,"&lt;"); }
+
+function home(){
+  clearFlaps(); round = null;
+  const p = pool(), dom = p.filter(c=>isDom(c[0])).length;
+  const regions = [["all","MUNDO"],...Object.entries(R)];
+  app.innerHTML = `
+    <div class="chips">${regions.map(([id,n])=>
+      `<button class="chip${S.region===id?" sel":""}" data-r="${id}">${n}</button>`).join("")}
+    </div>
+    <div class="secline"><h2>PUERTAS DE EMBARQUE</h2></div>
+    <div class="board">
+      ${MODES.map((m,i)=>`
+        <button class="rowbtn" data-m="${m.id}">
+          <span class="gate">G${i+1}</span>
+          <span class="dest"><small>VUELO GEO-${String(i+1).padStart(2,"0")}</small>${m.n}</span>
+          <span class="status blink">EMBARQUE</span>
+        </button>`).join("")}
+      <button class="rowbtn" id="passport">
+        <span class="gate" style="background:var(--mute)">···</span>
+        <span class="dest"><small>DOCUMENTACIÓN</small>PASAPORTE</span>
+        <span class="status" style="color:var(--mute)">VER</span>
+      </button>
+    </div>
+    <div class="statstrip">
+      <span>MILLAS <b>${fmt(S.millas)}</b></span>
+      <span>DOMINADOS <b>${dom}/${p.length}</b></span>
+      <span>RÉCORD <b>×${S.best}</b></span>
+    </div>`;
+  app.querySelectorAll(".chip").forEach(b=>b.onclick=()=>{ S.region=b.dataset.r; save(); home(); });
+  app.querySelectorAll("[data-m]").forEach(b=>b.onclick=()=>startRound(b.dataset.m));
+  document.getElementById("passport").onclick = passport;
+}
+
+/* ---------- ronda ---------- */
+function weightOf(iso, m){
+  const l = lvl(iso,m);
+  return l===0 ? 4 : l===1 ? 2.5 : l===2 ? 1.2 : 0.4;
+}
+function pickWeighted(cands, m){
+  let tot = 0; const ws = cands.map(c=>{ const w=weightOf(c[0], m); tot+=w; return w; });
+  let r = Math.random()*tot;
+  for(let i=0;i<cands.length;i++){ r-=ws[i]; if(r<=0) return cands[i]; }
+  return cands[cands.length-1];
+}
+function makeQuestion(modeId, used){
+  const real = modeId==="mix" ? ["flag","capital","country"][Math.floor(Math.random()*3)] : modeId;
+  const cands = pool().filter(c=>!used.has(c[0]));
+  const target = pickWeighted(cands, real);
+  const ansText = c => real==="capital" ? c[2] : c[1];
+  // distractores: misma región, respuesta distinta
+  const others = DATA.filter(c => c[0]!==target[0] && ansText(c)!==ansText(target));
+  const sameReg = others.filter(c=>c[3]===target[3]);
+  const opts = [target];
+  const seen = new Set([ansText(target)]);
+  const src = [...sameReg];
+  while(opts.length<4){
+    const bag = src.length ? src : others.filter(c=>!seen.has(ansText(c)));
+    if(!bag.length) break;
+    const i = Math.floor(Math.random()*bag.length);
+    const c = bag===src ? src.splice(i,1)[0] : bag[i];
+    if(seen.has(ansText(c))) continue;
+    seen.add(ansText(c)); opts.push(c);
+  }
+  for(let i=opts.length-1;i>0;i--){ const j=Math.floor(Math.random()*(i+1)); [opts[i],opts[j]]=[opts[j],opts[i]]; }
+  return {mode:real, target, opts, answer:opts.indexOf(target)};
+}
+function startRound(modeId){
+  round = {modeId, n:0, hits:0, streak:0, maxStreak:0, gained:0, used:new Set()};
+  nextQuestion();
+}
+function nextQuestion(){
+  if(round.n >= QS_PER_ROUND) return results();
+  round.q = makeQuestion(round.modeId, round.used);
+  round.used.add(round.q.target[0]);
+  round.n++;
+  renderQuestion();
+}
+function renderQuestion(){
+  const {q, n, streak} = round;
+  const m = MODES.find(x=>x.id===q.mode);
+  const showFlagInOpts = q.mode!=="flag";
+  const isFlagQ = q.mode==="flag";
+  app.innerHTML = `
+    <div class="qtop">
+      <button class="back" id="back">← TERMINAL</button>
+      <span class="prog">${n} / ${QS_PER_ROUND}</span>
+      <span class="strk">${streak>1?`RACHA ×${streak}`:""}</span>
+    </div>
+    <div class="qcard">
+      <div class="eyebrow">VUELO GEO-${String(n).padStart(2,"0")} · ${R[q.target[3]]}</div>
+      <div class="qlabel">${m.q}</div>
+      ${isFlagQ
+        ? `<div class="flagbig">${flag(q.target[0])}</div>`
+        : `<div class="flapbox" id="flap"></div>`}
+    </div>
+    <div class="opts">
+      ${q.opts.map((c,i)=>{
+        const txt = q.mode==="capital" ? c[2] : c[1];
+        return `<button class="rowbtn opt" data-i="${i}">
+          <span class="gate">${"ABCD"[i]}</span>
+          <span class="dest">${showFlagInOpts&&q.mode==="country"?`<span class="flg">${flag(c[0])}</span> `:""}${esc(txt.toUpperCase())}</span>
+          <span class="status"></span>
+        </button>`;
+      }).join("")}
+    </div>`;
+  document.getElementById("back").onclick = home;
+  const fx = document.getElementById("flap");
+  if(fx){
+    const label = q.mode==="capital" ? `${q.target[1]}` : q.target[2];
+    flapText(fx, label);
+    if(q.mode==="capital"){ // bandera pequeña como refuerzo
+      const f = document.createElement("div");
+      f.style.cssText="text-align:center;font-size:30px;margin-top:10px";
+      f.textContent = flag(q.target[0]);
+      fx.after(f);
+    }
+  }
+  app.querySelectorAll(".opt").forEach(b=>b.onclick=()=>answer(+b.dataset.i));
+}
+function answer(i){
+  clearFlaps();
+  const q = round.q, ok = i===q.answer;
+  const btns = [...app.querySelectorAll(".opt")];
+  btns.forEach(b=>b.disabled=true);
+  btns[q.answer].classList.add("ok");
+  btns[q.answer].querySelector(".status").textContent = "CORRECTO";
+  btns.forEach((b,j)=>{ if(j!==q.answer && j!==i) b.classList.add("dim"); });
+  bump(q.target[0], q.mode, ok);
+  if(ok){
+    good();
+    round.hits++; round.streak++;
+    round.maxStreak = Math.max(round.maxStreak, round.streak);
+    S.best = Math.max(S.best, round.streak);
+    const pts = 10 + round.streak*2;
+    round.gained += pts; S.millas += pts;
+    if(navigator.vibrate) navigator.vibrate(15);
+  }else{
+    bad();
+    round.streak = 0;
+    btns[i].classList.add("bad","shake");
+    btns[i].querySelector(".status").textContent = "ERROR";
+    if(navigator.vibrate) navigator.vibrate([40,40,40]);
+  }
+  save();
+  setTimeout(nextQuestion, ok?900:1600);
+}
+function results(){
+  S.rondas++; save();
+  const r = round, perfect = r.hits===QS_PER_ROUND;
+  app.innerHTML = `
+    <div class="qtop"><button class="back" id="back">← TERMINAL</button></div>
+    <div class="pass">
+      <div class="ptop"><span>TARJETA DE EMBARQUE</span><span>GEO-${String(Math.floor(S.rondas)).padStart(3,"0")}</span></div>
+      <div class="pbody">
+        <div class="stamp ${r.hits>=7?"ok":"meh"}">${perfect?"PERFECTO":r.hits>=7?"APTO":"EN PRÁCTICAS"}</div>
+        <div class="pgrid">
+          <div><div class="plabel">ACIERTOS</div><div class="pval">${r.hits}<small> / ${QS_PER_ROUND}</small></div></div>
+          <div><div class="plabel">MEJOR RACHA</div><div class="pval">×${r.maxStreak}</div></div>
+          <div><div class="plabel">MILLAS GANADAS</div><div class="pval">+${fmt(r.gained)}</div></div>
+          <div><div class="plabel">MILLAS TOTALES</div><div class="pval">${fmt(S.millas)}</div></div>
+        </div>
+      </div>
+      <div class="perf"></div>
+      <div class="barcode"></div>
+    </div>
+    <div class="resbtns">
+      <button class="bigbtn" id="toHome">TERMINAL</button>
+      <button class="bigbtn amber" id="again">OTRA RONDA</button>
+    </div>`;
+  document.getElementById("back").onclick = home;
+  document.getElementById("toHome").onclick = home;
+  document.getElementById("again").onclick = ()=>startRound(r.modeId);
+  if(r.hits>=7) good();
+}
+
+/* ---------- pasaporte ---------- */
+function passport(){
+  clearFlaps();
+  const regs = Object.entries(R).map(([id,name])=>{
+    const cs = DATA.filter(c=>c[3]===id);
+    const dom = cs.filter(c=>isDom(c[0])).length;
+    return {id,name,cs,dom};
+  });
+  app.innerHTML = `
+    <div class="qtop"><button class="back" id="back">← TERMINAL</button><span class="prog">PASAPORTE</span><span></span></div>
+    <div class="statstrip" style="margin:2px 2px 18px">
+      <span>MILLAS <b>${fmt(S.millas)}</b></span>
+      <span>RONDAS <b>${S.rondas}</b></span>
+      <span>RÉCORD <b>×${S.best}</b></span>
+    </div>
+    ${regs.map(r=>`
+      <div class="regrow">
+        <div class="rl"><b>${r.name}</b><span>${r.dom} / ${r.cs.length} DOMINADOS</span></div>
+        <div class="bar"><i style="width:${r.cs.length?Math.round(100*r.dom/r.cs.length):0}%"></i></div>
+        <div class="flaggrid">${r.cs.map(c=>{
+          const s = domScore(c[0]);
+          const cls = isDom(c[0])?"dom": s>=5?"l2": s>=2?"l1":"";
+          return `<button class="fcell ${cls}" data-iso="${c[0]}">${flag(c[0])}</button>`;
+        }).join("")}</div>
+      </div>`).join("")}
+    <button class="danger" id="reset">BORRAR PROGRESO</button>`;
+  document.getElementById("back").onclick = home;
+  app.querySelectorAll(".fcell").forEach(b=>b.onclick=()=>{
+    const c = DATA.find(x=>x[0]===b.dataset.iso);
+    peek.innerHTML = `${flag(c[0])} <b>${esc(c[1])}</b> · ${esc(c[2])}`;
+    peek.classList.add("show");
+    clearTimeout(peekT); peekT = setTimeout(()=>peek.classList.remove("show"), 2200);
+  });
+  const rst = document.getElementById("reset");
+  rst.onclick = ()=>{
+    if(rst.classList.contains("armed")){
+      S.millas=0; S.best=0; S.rondas=0; S.stats={}; save(); passport();
+    }else{
+      rst.classList.add("armed");
+      rst.textContent = "PULSA OTRA VEZ PARA CONFIRMAR";
+      setTimeout(()=>{ rst.classList.remove("armed"); rst.textContent="BORRAR PROGRESO"; }, 2500);
+    }
+  };
+}
+
+/* ============ RELOJ / SONIDO / SW ============ */
+function tickClock(){
+  const d = new Date();
+  document.getElementById("clock").textContent =
+    String(d.getHours()).padStart(2,"0")+":"+String(d.getMinutes()).padStart(2,"0");
+}
+tickClock(); setInterval(tickClock, 15000);
+
+const sndbtn = document.getElementById("sndbtn");
+function paintSnd(){ sndbtn.textContent = S.sound?"♪ ON":"♪ OFF"; sndbtn.classList.toggle("on",S.sound); }
+sndbtn.onclick = ()=>{ S.sound=!S.sound; save(); paintSnd(); if(S.sound) tick(); };
+paintSnd();
+
+if("serviceWorker" in navigator && location.protocol!=="file:"){
+  addEventListener("load", ()=>navigator.serviceWorker.register("sw.js"));
+}
+
+home();
+</script>
+</body>
+</html>
