@@ -23,6 +23,7 @@
   --ok:#37C871;
   --bad:#F25555;
   --mute:#6B7686;
+  --radar:#3DDC84;
   --mono:"SF Mono", ui-monospace, "Roboto Mono", Menlo, Consolas, monospace;
 }
 *{box-sizing:border-box;margin:0;padding:0;-webkit-tap-highlight-color:transparent}
@@ -34,15 +35,16 @@ body{
   min-height:100dvh;
   touch-action:manipulation;
   -webkit-font-smoothing:antialiased;
+  overflow-x:hidden;
 }
 button{font:inherit;color:inherit;background:none;border:0;cursor:pointer;touch-action:manipulation;user-select:none;-webkit-user-select:none}
+svg{display:block}
 
 /* ---------- cabecera ---------- */
 header{
   position:sticky;top:0;z-index:10;
   background:var(--bg);
-  border-bottom:2px solid var(--amber);
-  padding:calc(10px + env(safe-area-inset-top)) 16px 10px;
+  padding:calc(10px + env(safe-area-inset-top)) 16px 8px;
 }
 .hrow{display:flex;justify-content:space-between;align-items:baseline;gap:8px}
 .brand{font-size:15px;font-weight:700;letter-spacing:.18em}
@@ -52,6 +54,11 @@ header{
 .clock{font-size:15px;font-variant-numeric:tabular-nums;color:var(--amber)}
 #sndbtn{color:var(--mute);font-size:12px;padding:2px 6px;letter-spacing:.1em}
 #sndbtn.on{color:var(--ink)}
+/* luces de pista bajo la cabecera */
+.runlights{height:4px;display:flex;gap:14px;justify-content:center;background:var(--bg);
+  border-bottom:2px solid var(--amber);padding-bottom:2px}
+.runlights i{width:4px;height:3px;border-radius:1px;background:var(--amber);opacity:.15;animation:chase 2.4s linear infinite}
+@keyframes chase{0%,100%{opacity:.12}12%{opacity:.9}30%{opacity:.2}}
 
 main{
   max-width:560px;margin:0 auto;
@@ -66,12 +73,15 @@ main{
   border-radius:8px;padding:14px 14px;
   box-shadow:inset 0 1px 0 rgba(255,255,255,.05), 0 2px 4px rgba(0,0,0,.4);
   position:relative;overflow:hidden;text-align:left;width:100%;
+  transition:transform .08s;
 }
 .rowbtn::after{ /* costura del flap */
   content:"";position:absolute;left:0;right:0;top:50%;height:1px;
   background:rgba(0,0,0,.45);pointer-events:none;
 }
-.rowbtn:active{transform:translateY(1px)}
+.rowbtn:active{transform:scale(.985)}
+.flipin{animation:flipin .5s cubic-bezier(.2,.85,.3,1.15) both;transform-origin:top center}
+@keyframes flipin{from{transform:rotateX(-70deg);opacity:0}to{transform:none;opacity:1}}
 .gate{
   font-size:11px;color:var(--bg2);background:var(--amber);
   border-radius:4px;padding:3px 6px;font-weight:700;letter-spacing:.08em;
@@ -100,19 +110,59 @@ main{
 }
 .statstrip b{color:var(--amber);font-weight:700}
 
+/* ---------- licencia de piloto (rango) ---------- */
+.rankcard{
+  display:grid;grid-template-columns:auto 1fr auto;gap:12px;align-items:center;
+  background:linear-gradient(135deg,#161B22,#12161C);border:1px solid #232B36;
+  border-radius:10px;padding:12px 14px;margin-bottom:12px;
+}
+.epaul{width:54px;height:26px;background:linear-gradient(#0E1116,#151A21);border-radius:4px;
+  display:flex;align-items:center;justify-content:center;gap:3px;
+  box-shadow:inset 0 1px 0 rgba(255,255,255,.06)}
+.epaul i{width:5px;height:18px;background:linear-gradient(#FFD976,#D99A16);border-radius:1px}
+.epaul .star{width:auto;height:auto;background:none;color:var(--amber);font-size:13px;font-style:normal;line-height:1}
+.rankname{font-size:13px;font-weight:700;letter-spacing:.15em}
+.rankname small{display:block;font-weight:400;font-size:9px;color:var(--mute);letter-spacing:.25em;margin-bottom:2px}
+.ranknext{font-size:9px;color:var(--mute);letter-spacing:.1em;text-align:right}
+.rankbar{width:64px;height:5px;background:#0E1116;border-radius:99px;overflow:hidden;margin-top:4px}
+.rankbar i{display:block;height:100%;background:var(--amber)}
+
 /* ---------- pantalla de pregunta ---------- */
-.qtop{display:flex;justify-content:space-between;align-items:center;margin-bottom:14px;font-size:11px;letter-spacing:.15em}
+.qtop{display:flex;justify-content:space-between;align-items:center;margin-bottom:10px;font-size:11px;letter-spacing:.15em}
 .qtop .back{color:var(--mute);padding:6px 8px 6px 0}
-.qtop .prog{color:var(--ink)}
-.qtop .strk{color:var(--amber)}
+.alt{color:var(--amber);font-variant-numeric:tabular-nums;transition:transform .2s}
+.alt.up{animation:altup .35s}
+@keyframes altup{40%{transform:translateY(-4px)}}
+/* ruta de vuelo */
+.route{
+  display:grid;grid-template-columns:auto 1fr auto;gap:10px;align-items:center;
+  background:var(--bg);border:1px solid #1E252E;border-radius:10px;
+  padding:10px 12px;margin-bottom:12px;
+}
+.route .apt{font-size:11px;font-weight:700;letter-spacing:.1em;color:var(--mute)}
+.route .apt.lit{color:var(--amber)}
+.track{position:relative;height:22px}
+.track .line{position:absolute;left:0;right:0;top:50%;border-top:2px dashed #2A323D}
+.stops{position:absolute;inset:0;display:flex;justify-content:space-between;align-items:center}
+.stops i{width:6px;height:6px;border-radius:50%;background:#2A323D}
+.stops i.ok{background:var(--ok)}
+.stops i.bad{background:var(--bad)}
+.plane{
+  position:absolute;top:50%;width:26px;color:var(--ink);
+  transform:translate(-50%,-50%);transition:left .6s cubic-bezier(.3,.8,.4,1);
+  filter:drop-shadow(0 2px 3px rgba(0,0,0,.6));
+}
+.plane svg{width:100%;fill:currentColor}
+
 .qcard{
   background:var(--bg);border-radius:10px;padding:18px 14px 20px;margin-bottom:14px;
   border:1px solid #1E252E;
   box-shadow:0 4px 14px rgba(0,0,0,.35);
+  position:relative;overflow:hidden;
 }
 .eyebrow{font-size:10px;letter-spacing:.3em;color:var(--mute);text-align:center;margin-bottom:4px}
 .qlabel{font-size:12px;letter-spacing:.2em;color:var(--amber);text-align:center;margin-bottom:16px}
-.flapbox{display:flex;flex-wrap:wrap;justify-content:center;gap:.35em;min-height:2.6em}
+.flapbox{display:flex;flex-wrap:wrap;justify-content:center;gap:.35em;min-height:2.6em;position:relative;z-index:1}
 .word{display:inline-flex}
 .ch{
   display:inline-grid;place-items:center;
@@ -123,17 +173,33 @@ main{
   box-shadow:inset 0 1px 0 rgba(255,255,255,.07), 0 1px 2px rgba(0,0,0,.5);
 }
 .ch::after{content:"";position:absolute;left:0;right:0;top:50%;height:1px;background:rgba(0,0,0,.55)}
+/* radar tras la bandera */
+.radar{
+  position:absolute;left:50%;top:56%;width:230px;height:230px;transform:translate(-50%,-50%);
+  border-radius:50%;opacity:.14;pointer-events:none;
+  background:
+    repeating-radial-gradient(circle, transparent 0 34px, var(--radar) 34px 35px),
+    conic-gradient(from 0deg, rgba(61,220,132,.9), transparent 70deg, transparent 360deg);
+  animation:sweep 4s linear infinite;
+}
+@keyframes sweep{to{transform:translate(-50%,-50%) rotate(360deg)}}
 .flagbig{
   display:grid;place-items:center;margin:0 auto;
   width:150px;height:118px;font-size:78px;line-height:1;
   background:linear-gradient(var(--tile-hi),var(--tile) 48%,#151A21 52%,#1D242D);
-  border-radius:12px;position:relative;
+  border-radius:12px;position:relative;z-index:1;
   box-shadow:inset 0 1px 0 rgba(255,255,255,.07), 0 3px 8px rgba(0,0,0,.5);
   animation:flapdrop .45s cubic-bezier(.2,.9,.3,1.2);
   transform-origin:top center;
 }
 .flagbig::after{content:"";position:absolute;left:0;right:0;top:50%;height:1px;background:rgba(0,0,0,.45)}
 @keyframes flapdrop{from{transform:rotateX(-80deg);opacity:0}to{transform:none;opacity:1}}
+.reinfo{
+  text-align:center;font-size:12px;letter-spacing:.12em;color:var(--mute);
+  margin-top:14px;min-height:1.2em;position:relative;z-index:1;
+}
+.reinfo b{color:var(--ink)}
+.reinfo.show{animation:flipin .35s both}
 
 .opts{display:flex;flex-direction:column;gap:8px}
 .opt .dest{font-size:14px}
@@ -147,6 +213,65 @@ main{
 .opt:disabled{cursor:default}
 .shake{animation:shake .3s}
 @keyframes shake{25%{transform:translateX(-4px)}75%{transform:translateX(4px)}}
+.taphint{text-align:center;font-size:10px;letter-spacing:.25em;color:var(--mute);margin-top:14px;animation:blink 1.4s steps(2) infinite}
+
+/* ---------- overlay de vuelo (despegue / aterrizaje / ascenso) ---------- */
+#ovl{
+  position:fixed;inset:0;z-index:50;display:none;
+  background:linear-gradient(#0B0E11 0%,#12181f 55%,#151A21 100%);
+  overflow:hidden;
+}
+#ovl.show{display:block}
+.ovl-msg{
+  position:absolute;left:0;right:0;top:26%;text-align:center;z-index:3;
+}
+.ovl-msg .eyebrow{margin-bottom:8px}
+.ovl-msg h3{font-size:20px;letter-spacing:.25em;font-weight:700}
+.ovl-msg h3 b{color:var(--amber)}
+.cloud{
+  position:absolute;width:180px;height:44px;border-radius:99px;z-index:1;
+  background:radial-gradient(circle at 30% 60%, #232B36 0 40%, transparent 70%),
+             radial-gradient(circle at 60% 40%, #232B36 0 45%, transparent 72%),
+             radial-gradient(circle at 80% 65%, #1D242D 0 38%, transparent 70%);
+  opacity:.7;animation:drift linear infinite;
+}
+@keyframes drift{from{transform:translateX(110vw)}to{transform:translateX(-260px)}}
+.runway{
+  position:absolute;left:0;right:0;bottom:0;height:96px;z-index:1;
+  background:#0D1014;border-top:2px solid #232B36;
+}
+.runway .center{
+  position:absolute;left:0;right:0;top:46px;height:6px;
+  background:repeating-linear-gradient(90deg,var(--amber) 0 34px,transparent 34px 74px);
+  opacity:.5;animation:roll .5s linear infinite;
+}
+@keyframes roll{to{background-position:-74px 0}}
+.ovlplane{
+  position:absolute;z-index:2;width:120px;color:#EDE8DA;left:-140px;bottom:110px;
+  filter:drop-shadow(0 6px 10px rgba(0,0,0,.7));
+}
+.ovlplane svg{width:100%;fill:currentColor}
+#ovl.takeoff .ovlplane{animation:takeoff 1.5s cubic-bezier(.55,.05,.6,.9) forwards}
+@keyframes takeoff{
+  0%{left:-140px;bottom:110px;transform:rotate(0deg)}
+  45%{left:34vw;bottom:110px;transform:rotate(0deg)}
+  100%{left:105vw;bottom:64vh;transform:rotate(-16deg)}
+}
+#ovl.landing .ovlplane{animation:landing 1.5s cubic-bezier(.4,.1,.7,1) forwards}
+@keyframes landing{
+  0%{left:-140px;bottom:64vh;transform:rotate(10deg)}
+  60%{left:40vw;bottom:112px;transform:rotate(2deg)}
+  100%{left:105vw;bottom:110px;transform:rotate(0deg)}
+}
+/* ascenso de rango */
+.ovl-rank{
+  position:absolute;inset:0;display:flex;flex-direction:column;gap:18px;
+  align-items:center;justify-content:center;z-index:3;text-align:center;
+}
+.ovl-rank .epaul{margin:14px 0 22px;animation:rankin .55s cubic-bezier(.2,.9,.3,1.4) both .2s;box-shadow:0 0 46px rgba(255,197,61,.35), inset 0 1px 0 rgba(255,255,255,.06)}
+@keyframes rankin{from{transform:scale(.3);opacity:0}to{transform:scale(2.2);opacity:1}}
+.ovl-rank h3{font-size:22px;letter-spacing:.3em;color:var(--amber)}
+.ovl-rank p{font-size:11px;letter-spacing:.25em;color:var(--mute)}
 
 /* ---------- tarjeta de embarque (resultados) ---------- */
 .pass{
@@ -160,16 +285,25 @@ main{
   display:flex;justify-content:space-between;align-items:center;
   font-size:11px;letter-spacing:.2em;font-weight:700;
 }
-.pass .pbody{padding:18px 16px;position:relative}
+.pass .proute{
+  display:flex;align-items:center;gap:10px;padding:14px 16px 0;
+  font-size:16px;font-weight:700;letter-spacing:.1em;
+}
+.pass .proute svg{width:22px;fill:#20242B;opacity:.8}
+.pass .proute .dots{flex:1;border-top:2px dashed #B9B4A4;position:relative;top:1px}
+.pass .proute small{font-size:9px;letter-spacing:.2em;color:#8A8676;display:block;font-weight:400}
+.pass .pbody{padding:14px 16px 18px;position:relative}
 .pass .pgrid{display:grid;grid-template-columns:1fr 1fr;gap:14px 10px}
 .pass .plabel{font-size:9px;letter-spacing:.25em;color:#8A8676;margin-bottom:3px}
 .pass .pval{font-size:22px;font-weight:700;font-variant-numeric:tabular-nums}
 .pass .pval small{font-size:12px;font-weight:400}
 .stamp{
-  position:absolute;right:14px;top:12px;transform:rotate(-12deg);
+  position:absolute;right:14px;top:6px;transform:rotate(-12deg);
   border:2.5px solid;border-radius:8px;padding:5px 10px;
-  font-size:12px;font-weight:700;letter-spacing:.2em;opacity:.85;
+  font-size:12px;font-weight:700;letter-spacing:.2em;
+  animation:stampin .4s cubic-bezier(.2,.9,.3,1.4) both .5s;
 }
+@keyframes stampin{from{transform:rotate(-12deg) scale(2.6);opacity:0}to{transform:rotate(-12deg) scale(1);opacity:.88}}
 .stamp.ok{color:#2E8B57;border-color:#2E8B57}
 .stamp.meh{color:#B0533B;border-color:#B0533B}
 .perf{border-top:2px dashed #B9B4A4;position:relative;margin:0 10px}
@@ -196,25 +330,33 @@ main{
 .flaggrid{display:grid;grid-template-columns:repeat(auto-fill,minmax(44px,1fr));gap:6px;margin-top:8px}
 .fcell{
   font-size:24px;display:grid;place-items:center;aspect-ratio:1;
-  background:var(--tile);border-radius:8px;opacity:.35;
+  background:var(--tile);border-radius:8px;opacity:.35;position:relative;
 }
 .fcell.l1{opacity:.6}.fcell.l2{opacity:.85}
 .fcell.dom{opacity:1;outline:1px solid var(--amber)}
+.fcell.dom::after{
+  content:"✓";position:absolute;right:2px;bottom:1px;font-size:9px;
+  color:var(--bg2);background:var(--amber);border-radius:50%;
+  width:12px;height:12px;display:grid;place-items:center;font-weight:700;
+}
 #peek{
   position:fixed;left:50%;transform:translateX(-50%);
   bottom:calc(14px + env(safe-area-inset-bottom));
   background:var(--tile);border:1px solid #2A323D;border-radius:99px;
   padding:10px 18px;font-size:13px;letter-spacing:.08em;white-space:nowrap;
-  box-shadow:0 6px 20px rgba(0,0,0,.5);z-index:20;
+  box-shadow:0 6px 20px rgba(0,0,0,.5);z-index:60;
   opacity:0;pointer-events:none;transition:opacity .25s;
 }
 #peek.show{opacity:1}
 #peek b{color:var(--amber)}
+#peek.sello{border-color:var(--ok);color:var(--ok)}
+#peek.sello b{color:var(--ok)}
 .danger{color:var(--mute);font-size:11px;letter-spacing:.15em;padding:12px;width:100%;text-align:center;margin-top:18px}
 .danger.armed{color:var(--bad)}
 
 @media (prefers-reduced-motion:reduce){
   *{animation:none!important;transition:none!important}
+  .stamp{opacity:.88}
 }
 </style>
 </head>
@@ -229,13 +371,16 @@ main{
     <button id="sndbtn" aria-label="Sonido">♪ ON</button>
   </div>
 </header>
+<div class="runlights" aria-hidden="true"><i></i><i style="animation-delay:.2s"></i><i style="animation-delay:.4s"></i><i style="animation-delay:.6s"></i><i style="animation-delay:.8s"></i><i style="animation-delay:1s"></i><i style="animation-delay:1.2s"></i></div>
 <main id="app"></main>
+<div id="ovl" aria-hidden="true"></div>
 <div id="peek" role="status"></div>
 
 <script>
 "use strict";
 /* ============ DATOS · [iso, país, capital, región] ============ */
 const R = {eu:"EUROPA", am:"AMÉRICA", as:"ASIA", af:"ÁFRICA", oc:"OCEANÍA"};
+const RCODE = {all:"MUN", eu:"EUR", am:"AME", as:"ASI", af:"AFR", oc:"OCE"};
 const DATA = [
 // EUROPA
 ["ES","España","Madrid","eu"],["FR","Francia","París","eu"],["PT","Portugal","Lisboa","eu"],
@@ -318,15 +463,25 @@ const MODES = [
   {id:"mix",     n:"VUELO MIXTO",     q:""},
 ];
 const QS_PER_ROUND = 10;
+/* rangos de piloto: [millas mínimas, nombre, galones, estrella] */
+const RANKS = [
+  [0,"CADETE",1,false],
+  [300,"PRIMER OFICIAL",2,false],
+  [1200,"CAPITÁN",3,false],
+  [4000,"COMANDANTE",4,false],
+  [10000,"AS DEL AIRE",4,true],
+];
+const PLANE = `<svg viewBox="0 0 64 24" aria-hidden="true"><path d="M3 15.5 Q3 12.5 10 11.8 L44 9 L52.5 2.5 L56 2.5 L51.5 9.6 L57 10 Q62 10.8 62.5 12.6 Q63 14.4 57 15 L14 17.6 Q5 17.6 3 15.5 Z M25 12.6 L16.5 22 L21.5 22 L32.5 13.4 Z M12 12 L7 7.5 L10 7.5 L16.5 11.6 Z"/></svg>`;
 
 /* ============ ESTADO ============ */
 const S = load();
 function load(){
+  const def = {millas:0, best:0, rondas:0, region:"all", sound:true, stats:{}, lastRank:0, hints:0};
   try{
     const s = JSON.parse(localStorage.getItem("tm.state"));
-    if(s && s.stats) return s;
+    if(s && s.stats){ const m = Object.assign(def, s); m.lastRank = m.lastRank ?? rankIdx(m.millas); return m; }
   }catch(e){}
-  return {millas:0, best:0, rondas:0, region:"all", sound:true, stats:{}};
+  return def;
 }
 function save(){ localStorage.setItem("tm.state", JSON.stringify(S)); }
 const key = (iso,m)=> iso+":"+m;
@@ -339,6 +494,11 @@ const domScore = iso => lvl(iso,"flag")+lvl(iso,"capital")+lvl(iso,"country"); /
 const isDom = iso => lvl(iso,"flag")>=2 && lvl(iso,"capital")>=2 && lvl(iso,"country")>=2;
 const pool = ()=> S.region==="all" ? DATA : DATA.filter(c=>c[3]===S.region);
 const fmt = n => n.toLocaleString("es-ES");
+function rankIdx(millas){ let i=0; RANKS.forEach((r,j)=>{ if(millas>=r[0]) i=j; }); return i; }
+function epaulHTML(i){
+  const [,,g,star] = RANKS[i];
+  return `<span class="epaul">${"<i></i>".repeat(g)}${star?'<i class="star">★</i>':""}</span>`;
+}
 
 /* ============ AUDIO (clacks solari, sin assets) ============ */
 let AC=null;
@@ -352,9 +512,23 @@ function blip(freq,dur,type,gain,when=0){
     o.start(t); o.stop(t+dur+.02);
   }catch(e){}
 }
+function whoosh(dur=1.2){ /* turbina: ruido filtrado con rampa */
+  if(!S.sound) return;
+  try{
+    const c=ac(), n=c.sampleRate*dur, buf=c.createBuffer(1,n,c.sampleRate), d=buf.getChannelData(0);
+    for(let i=0;i<n;i++) d[i]=(Math.random()*2-1)*Math.min(1,i/(n*.4))*(1-i/n);
+    const src=c.createBufferSource(); src.buffer=buf;
+    const f=c.createBiquadFilter(); f.type="bandpass"; f.frequency.setValueAtTime(300,c.currentTime);
+    f.frequency.exponentialRampToValueAtTime(1400,c.currentTime+dur*.7); f.Q.value=.8;
+    const g=c.createGain(); g.gain.value=.12;
+    src.connect(f); f.connect(g); g.connect(c.destination); src.start();
+  }catch(e){}
+}
 const tick = ()=> blip(2400,.015,"square",.015);
 const good = ()=> { blip(660,.09,"square",.05); blip(990,.14,"square",.05,.09); };
 const bad  = ()=> blip(160,.22,"sawtooth",.06);
+const thud = ()=> { blip(75,.15,"sine",.22); blip(2000,.02,"square",.03); };
+const fanfare = ()=> { blip(523,.1,"square",.05); blip(659,.1,"square",.05,.11); blip(784,.12,"square",.05,.22); blip(1047,.25,"square",.06,.33); };
 
 /* ============ SPLIT-FLAP ============ */
 const REDUCED = matchMedia("(prefers-reduced-motion: reduce)").matches;
@@ -385,30 +559,82 @@ function flapText(el, text){
   }
 }
 
+/* ============ OVERLAY DE VUELO ============ */
+const ovl = document.getElementById("ovl");
+let ovlT = null;
+function clouds(n){
+  let h = "";
+  for(let i=0;i<n;i++){
+    const top = 8+Math.random()*40, dur = 7+Math.random()*8, delay = -Math.random()*10, sc = .6+Math.random()*.9;
+    h += `<div class="cloud" style="top:${top}%;animation-duration:${dur}s;animation-delay:${delay}s;transform:scale(${sc})"></div>`;
+  }
+  return h;
+}
+function flightScene(kind, eyebrow, title, done){
+  if(REDUCED){ done(); return; }
+  clearTimeout(ovlT);
+  ovl.className = "show "+kind;
+  ovl.innerHTML = `
+    ${clouds(4)}
+    <div class="ovl-msg">
+      <div class="eyebrow">${eyebrow}</div>
+      <h3>${title}</h3>
+    </div>
+    <div class="ovlplane">${PLANE}</div>
+    <div class="runway"><div class="center"></div></div>`;
+  whoosh();
+  ovlT = setTimeout(()=>{ ovl.className=""; ovl.innerHTML=""; done(); }, 1600);
+}
+function rankScene(i, done){
+  clearTimeout(ovlT);
+  ovl.className = "show";
+  ovl.innerHTML = `
+    <div class="ovl-rank">
+      <div class="eyebrow">ASCENSO DE RANGO</div>
+      ${epaulHTML(i)}
+      <h3>${RANKS[i][1]}</h3>
+      <p>LA TRIPULACIÓN TE FELICITA</p>
+    </div>`;
+  fanfare();
+  ovlT = setTimeout(()=>{ ovl.className=""; ovl.innerHTML=""; done(); }, REDUCED?400:2300);
+}
+
 /* ============ NAVEGACIÓN / PANTALLAS ============ */
 const app = document.getElementById("app");
 const peek = document.getElementById("peek");
 let round = null, peekT = null;
 
 function esc(s){ return s.replace(/&/g,"&amp;").replace(/</g,"&lt;"); }
+function showPeek(html, sello){
+  peek.className = sello ? "show sello" : "show";
+  peek.innerHTML = html;
+  clearTimeout(peekT); peekT = setTimeout(()=>peek.classList.remove("show"), 2400);
+}
 
 function home(){
   clearFlaps(); round = null;
   const p = pool(), dom = p.filter(c=>isDom(c[0])).length;
+  const ri = rankIdx(S.millas), next = RANKS[ri+1];
+  const prog = next ? Math.min(100, Math.round(100*(S.millas-RANKS[ri][0])/(next[0]-RANKS[ri][0]))) : 100;
   const regions = [["all","MUNDO"],...Object.entries(R)];
   app.innerHTML = `
     <div class="chips">${regions.map(([id,n])=>
       `<button class="chip${S.region===id?" sel":""}" data-r="${id}">${n}</button>`).join("")}
     </div>
+    <div class="rankcard flipin">
+      ${epaulHTML(ri)}
+      <div class="rankname"><small>LICENCIA DE PILOTO</small>${RANKS[ri][1]}</div>
+      <div class="ranknext">${next?`${fmt(next[0]-S.millas)} MI PARA ${next[1]}`:"RANGO MÁXIMO"}<div class="rankbar"><i style="width:${prog}%"></i></div></div>
+    </div>
     <div class="secline"><h2>PUERTAS DE EMBARQUE</h2></div>
     <div class="board">
       ${MODES.map((m,i)=>`
-        <button class="rowbtn" data-m="${m.id}">
+        <button class="rowbtn flipin" style="animation-delay:${.06*(i+1)}s" data-m="${m.id}">
           <span class="gate">G${i+1}</span>
           <span class="dest"><small>VUELO GEO-${String(i+1).padStart(2,"0")}</small>${m.n}</span>
           <span class="status blink">EMBARQUE</span>
         </button>`).join("")}
-      <button class="rowbtn" id="passport">
+      <button class="rowbtn flipin" style="animation-delay:.36s" id="passport">
         <span class="gate" style="background:var(--mute)">···</span>
         <span class="dest"><small>DOCUMENTACIÓN</small>PASAPORTE</span>
         <span class="status" style="color:var(--mute)">VER</span>
@@ -440,7 +666,6 @@ function makeQuestion(modeId, used){
   const cands = pool().filter(c=>!used.has(c[0]));
   const target = pickWeighted(cands, real);
   const ansText = c => real==="capital" ? c[2] : c[1];
-  // distractores: misma región, respuesta distinta
   const others = DATA.filter(c => c[0]!==target[0] && ansText(c)!==ansText(target));
   const sameReg = others.filter(c=>c[3]===target[3]);
   const opts = [target];
@@ -458,44 +683,72 @@ function makeQuestion(modeId, used){
   return {mode:real, target, opts, answer:opts.indexOf(target)};
 }
 function startRound(modeId){
-  round = {modeId, n:0, hits:0, streak:0, maxStreak:0, gained:0, used:new Set()};
-  nextQuestion();
+  round = {modeId, n:0, hits:0, streak:0, maxStreak:0, gained:0, used:new Set(), hist:[], newDom:[]};
+  const m = MODES.find(x=>x.id===modeId);
+  flightScene("takeoff",
+    `VUELO GEO-0${MODES.indexOf(m)+1} · DESTINO ${RCODE[S.region]}`,
+    `<b>${m.n}</b> · DESPEGUE`,
+    nextQuestion);
 }
+let advanceT = null, canAdvance = false;
 function nextQuestion(){
-  if(round.n >= QS_PER_ROUND) return results();
+  canAdvance = false;
+  if(round.n >= QS_PER_ROUND){
+    flightScene("landing", "FIN DE TRAYECTO", "<b>ATERRIZANDO</b>…", results);
+    return;
+  }
   round.q = makeQuestion(round.modeId, round.used);
   round.used.add(round.q.target[0]);
   round.n++;
   renderQuestion();
 }
+function routeHTML(){
+  const stops = Array.from({length:QS_PER_ROUND}, (_,i)=>{
+    const h = round.hist[i];
+    return `<i class="${h===true?"ok":h===false?"bad":""}"></i>`;
+  }).join("");
+  const pct = ((round.n-1)/(QS_PER_ROUND-1))*100;
+  return `
+    <div class="route">
+      <span class="apt lit">HUB</span>
+      <div class="track">
+        <div class="line"></div>
+        <div class="stops">${stops}</div>
+        <div class="plane" style="left:${pct}%">${PLANE}</div>
+      </div>
+      <span class="apt">${RCODE[S.region]}</span>
+    </div>`;
+}
 function renderQuestion(){
-  const {q, n, streak} = round;
+  const {q, streak} = round;
   const m = MODES.find(x=>x.id===q.mode);
-  const showFlagInOpts = q.mode!=="flag";
   const isFlagQ = q.mode==="flag";
   app.innerHTML = `
     <div class="qtop">
       <button class="back" id="back">← TERMINAL</button>
-      <span class="prog">${n} / ${QS_PER_ROUND}</span>
-      <span class="strk">${streak>1?`RACHA ×${streak}`:""}</span>
+      <span class="alt" id="alt">ALT ${fmt(streak*1000)} FT</span>
     </div>
+    ${routeHTML()}
     <div class="qcard">
-      <div class="eyebrow">VUELO GEO-${String(n).padStart(2,"0")} · ${R[q.target[3]]}</div>
+      ${isFlagQ?'<div class="radar"></div>':""}
+      <div class="eyebrow">VUELO GEO-${String(round.n).padStart(2,"0")} · ${R[q.target[3]]}</div>
       <div class="qlabel">${m.q}</div>
       ${isFlagQ
         ? `<div class="flagbig">${flag(q.target[0])}</div>`
         : `<div class="flapbox" id="flap"></div>`}
+      <div class="reinfo" id="reinfo"></div>
     </div>
     <div class="opts">
       ${q.opts.map((c,i)=>{
         const txt = q.mode==="capital" ? c[2] : c[1];
-        return `<button class="rowbtn opt" data-i="${i}">
+        return `<button class="rowbtn opt flipin" style="animation-delay:${.05*i}s" data-i="${i}">
           <span class="gate">${"ABCD"[i]}</span>
-          <span class="dest">${showFlagInOpts&&q.mode==="country"?`<span class="flg">${flag(c[0])}</span> `:""}${esc(txt.toUpperCase())}</span>
+          <span class="dest">${q.mode==="country"?`<span class="flg">${flag(c[0])}</span> `:""}${esc(txt.toUpperCase())}</span>
           <span class="status"></span>
         </button>`;
       }).join("")}
-    </div>`;
+    </div>
+    <div id="hint"></div>`;
   document.getElementById("back").onclick = home;
   const fx = document.getElementById("flap");
   if(fx){
@@ -503,7 +756,7 @@ function renderQuestion(){
     flapText(fx, label);
     if(q.mode==="capital"){ // bandera pequeña como refuerzo
       const f = document.createElement("div");
-      f.style.cssText="text-align:center;font-size:30px;margin-top:10px";
+      f.style.cssText="text-align:center;font-size:30px;margin-top:10px;position:relative;z-index:1";
       f.textContent = flag(q.target[0]);
       fx.after(f);
     }
@@ -518,7 +771,15 @@ function answer(i){
   btns[q.answer].classList.add("ok");
   btns[q.answer].querySelector(".status").textContent = "CORRECTO";
   btns.forEach((b,j)=>{ if(j!==q.answer && j!==i) b.classList.add("dim"); });
+  const wasDom = isDom(q.target[0]);
   bump(q.target[0], q.mode, ok);
+  round.hist.push(ok);
+  if(!wasDom && isDom(q.target[0])) round.newDom.push(q.target);
+  // refuerzo: siempre el trío completo
+  const info = document.getElementById("reinfo");
+  info.innerHTML = `${flag(q.target[0])} <b>${esc(q.target[1].toUpperCase())}</b> · ${esc(q.target[2].toUpperCase())}`;
+  info.classList.add("show");
+  const altEl = document.getElementById("alt");
   if(ok){
     good();
     round.hits++; round.streak++;
@@ -526,31 +787,66 @@ function answer(i){
     S.best = Math.max(S.best, round.streak);
     const pts = 10 + round.streak*2;
     round.gained += pts; S.millas += pts;
+    altEl.textContent = `ALT ${fmt(round.streak*1000)} FT`;
+    altEl.classList.add("up");
     if(navigator.vibrate) navigator.vibrate(15);
   }else{
     bad();
     round.streak = 0;
+    altEl.textContent = "ALT 0 FT";
     btns[i].classList.add("bad","shake");
     btns[i].querySelector(".status").textContent = "ERROR";
     if(navigator.vibrate) navigator.vibrate([40,40,40]);
   }
   save();
-  setTimeout(nextQuestion, ok?900:1600);
+  // avance: automático o tocando en cualquier sitio
+  canAdvance = true;
+  if(S.hints<3){
+    S.hints++; save();
+    document.getElementById("hint").innerHTML = `<div class="taphint">TOCA PARA CONTINUAR</div>`;
+  }
+  clearTimeout(advanceT);
+  advanceT = setTimeout(advance, ok?1400:2400);
 }
+function advance(){
+  if(!canAdvance) return;
+  canAdvance = false;
+  clearTimeout(advanceT);
+  if(round.newDom.length){
+    const c = round.newDom.shift();
+    showPeek(`🛂 SELLO NUEVO · ${flag(c[0])} <b>${esc(c[1].toUpperCase())}</b>`, true);
+    thud();
+  }
+  nextQuestion();
+}
+document.addEventListener("pointerdown", e=>{
+  if(canAdvance && !e.target.closest?.(".back")) advance();
+});
 function results(){
-  S.rondas++; save();
+  S.rondas++;
+  const prevRank = S.lastRank, ri = rankIdx(S.millas);
+  const rankUp = ri > prevRank;
+  S.lastRank = ri; save();
   const r = round, perfect = r.hits===QS_PER_ROUND;
+  const m = MODES.find(x=>x.id===r.modeId);
   app.innerHTML = `
     <div class="qtop"><button class="back" id="back">← TERMINAL</button></div>
     <div class="pass">
       <div class="ptop"><span>TARJETA DE EMBARQUE</span><span>GEO-${String(Math.floor(S.rondas)).padStart(3,"0")}</span></div>
+      <div class="proute">
+        <span>HUB<small>TERMINAL</small></span>
+        <div class="dots"></div>
+        ${PLANE}
+        <div class="dots"></div>
+        <span>${RCODE[S.region]}<small>${S.region==="all"?"MUNDO":R[S.region]}</small></span>
+      </div>
       <div class="pbody">
         <div class="stamp ${r.hits>=7?"ok":"meh"}">${perfect?"PERFECTO":r.hits>=7?"APTO":"EN PRÁCTICAS"}</div>
         <div class="pgrid">
           <div><div class="plabel">ACIERTOS</div><div class="pval">${r.hits}<small> / ${QS_PER_ROUND}</small></div></div>
           <div><div class="plabel">MEJOR RACHA</div><div class="pval">×${r.maxStreak}</div></div>
           <div><div class="plabel">MILLAS GANADAS</div><div class="pval">+${fmt(r.gained)}</div></div>
-          <div><div class="plabel">MILLAS TOTALES</div><div class="pval">${fmt(S.millas)}</div></div>
+          <div><div class="plabel">RUTA</div><div class="pval" style="font-size:13px;line-height:2">${esc(m.n)}</div></div>
         </div>
       </div>
       <div class="perf"></div>
@@ -563,12 +859,15 @@ function results(){
   document.getElementById("back").onclick = home;
   document.getElementById("toHome").onclick = home;
   document.getElementById("again").onclick = ()=>startRound(r.modeId);
+  setTimeout(thud, REDUCED?0:500); // el sello se estampa
   if(r.hits>=7) good();
+  if(rankUp) setTimeout(()=>rankScene(ri, ()=>{}), 1400);
 }
 
 /* ---------- pasaporte ---------- */
 function passport(){
   clearFlaps();
+  const ri = rankIdx(S.millas);
   const regs = Object.entries(R).map(([id,name])=>{
     const cs = DATA.filter(c=>c[3]===id);
     const dom = cs.filter(c=>isDom(c[0])).length;
@@ -576,10 +875,15 @@ function passport(){
   });
   app.innerHTML = `
     <div class="qtop"><button class="back" id="back">← TERMINAL</button><span class="prog">PASAPORTE</span><span></span></div>
+    <div class="rankcard">
+      ${epaulHTML(ri)}
+      <div class="rankname"><small>LICENCIA DE PILOTO</small>${RANKS[ri][1]}</div>
+      <div class="ranknext">RONDAS <b style="color:var(--amber)">${S.rondas}</b></div>
+    </div>
     <div class="statstrip" style="margin:2px 2px 18px">
       <span>MILLAS <b>${fmt(S.millas)}</b></span>
-      <span>RONDAS <b>${S.rondas}</b></span>
       <span>RÉCORD <b>×${S.best}</b></span>
+      <span>SELLOS <b>${DATA.filter(c=>isDom(c[0])).length}</b></span>
     </div>
     ${regs.map(r=>`
       <div class="regrow">
@@ -595,14 +899,12 @@ function passport(){
   document.getElementById("back").onclick = home;
   app.querySelectorAll(".fcell").forEach(b=>b.onclick=()=>{
     const c = DATA.find(x=>x[0]===b.dataset.iso);
-    peek.innerHTML = `${flag(c[0])} <b>${esc(c[1])}</b> · ${esc(c[2])}`;
-    peek.classList.add("show");
-    clearTimeout(peekT); peekT = setTimeout(()=>peek.classList.remove("show"), 2200);
+    showPeek(`${flag(c[0])} <b>${esc(c[1])}</b> · ${esc(c[2])}`);
   });
   const rst = document.getElementById("reset");
   rst.onclick = ()=>{
     if(rst.classList.contains("armed")){
-      S.millas=0; S.best=0; S.rondas=0; S.stats={}; save(); passport();
+      S.millas=0; S.best=0; S.rondas=0; S.stats={}; S.lastRank=0; save(); passport();
     }else{
       rst.classList.add("armed");
       rst.textContent = "PULSA OTRA VEZ PARA CONFIRMAR";
