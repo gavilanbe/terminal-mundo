@@ -1,4 +1,4 @@
-const V = "tm-v4";
+const V = "tm-v5";
 const SHELL = [
   "./",
   "./index.html",
@@ -6,6 +6,7 @@ const SHELL = [
   "./icon-192.png",
   "./icon-512.png",
   "./apple-touch-icon.png",
+  "./world.geo.json",
 ];
 
 self.addEventListener("install", e => {

@@ -41,11 +41,9 @@ body{
   -webkit-font-smoothing:antialiased;
   overflow-x:hidden;
 }
-/* atmósfera: gradiente + viñeta + grano */
 body::before{
   content:"";position:fixed;inset:0;z-index:-2;pointer-events:none;
-  background:
-    radial-gradient(120% 90% at 50% -10%, #161C24 0%, #0B0E11 55%, #07090C 100%);
+  background:radial-gradient(120% 90% at 50% -10%, #161C24 0%, #0B0E11 55%, #07090C 100%);
 }
 body::after{
   content:"";position:fixed;inset:0;z-index:99;pointer-events:none;opacity:.05;
@@ -53,9 +51,8 @@ body::after{
 }
 button{font:inherit;color:inherit;background:none;border:0;cursor:pointer;touch-action:manipulation;user-select:none;-webkit-user-select:none}
 svg{display:block}
-.disp{font-family:var(--disp);font-weight:600;letter-spacing:.06em}
 
-/* ---------- cabecera retroiluminada ---------- */
+/* ---------- cabecera ---------- */
 header{
   position:sticky;top:0;z-index:10;
   background:linear-gradient(#14181E,#101317);
@@ -76,7 +73,7 @@ header{
   box-shadow:0 0 12px rgba(255,197,61,.35);
   position:relative;overflow:hidden;
 }
-.hbar::after{ /* pulso de luz recorriendo la barra */
+.hbar::after{
   content:"";position:absolute;top:0;bottom:0;width:60px;
   background:linear-gradient(90deg,transparent,rgba(255,255,255,.7),transparent);
   animation:hscan 5s ease-in-out infinite;
@@ -88,7 +85,7 @@ main{
   padding:14px 14px calc(24px + env(safe-area-inset-bottom));
 }
 
-/* ---------- filas de panel (materia) ---------- */
+/* ---------- filas de panel ---------- */
 .board{display:flex;flex-direction:column;gap:9px}
 .rowbtn{
   display:grid;grid-template-columns:auto 1fr auto;align-items:center;gap:12px;
@@ -106,7 +103,7 @@ main{
   background:rgba(0,0,0,.5);box-shadow:0 1px 0 rgba(255,255,255,.03);pointer-events:none;
 }
 .rowbtn:active{transform:translateY(2px);box-shadow:inset 0 1px 0 rgba(255,255,255,.05), 0 1px 3px rgba(0,0,0,.4)}
-.sheen::before{ /* barrido de brillo al entrar */
+.sheen::before{
   content:"";position:absolute;top:-20%;bottom:-20%;width:36%;left:-45%;z-index:1;
   background:linear-gradient(105deg,transparent,rgba(255,255,255,.09) 45%,rgba(255,255,255,.16) 50%,rgba(255,255,255,.09) 55%,transparent);
   transform:skewX(-12deg);
@@ -130,7 +127,7 @@ main{
 .blink{animation:blink 1.2s steps(2) infinite}
 @keyframes blink{50%{opacity:.25}}
 
-/* ---------- chips de región ---------- */
+/* ---------- chips ---------- */
 .chips{display:flex;gap:6px;overflow-x:auto;padding:2px 0 12px;scrollbar-width:none}
 .chips::-webkit-scrollbar{display:none}
 .chip{
@@ -145,6 +142,7 @@ main{
 
 .secline{display:flex;justify-content:space-between;align-items:baseline;margin:16px 2px 8px}
 .secline h2{font-size:11px;letter-spacing:.3em;color:var(--mute);font-weight:400}
+.secline span{font-size:10px;color:var(--mute);letter-spacing:.1em}
 .statstrip{
   display:flex;justify-content:space-between;gap:8px;margin-top:14px;
   font-size:11px;letter-spacing:.12em;color:var(--mute);
@@ -161,7 +159,7 @@ main{
 .belt span{font-size:26px;filter:saturate(.85) brightness(.92)}
 @keyframes belt{to{transform:translateX(-50%)}}
 
-/* ---------- licencia de piloto ---------- */
+/* ---------- licencia ---------- */
 .rankcard{
   display:grid;grid-template-columns:auto 1fr auto;gap:12px;align-items:center;
   background:linear-gradient(135deg,#181E27,#12161C);
@@ -213,8 +211,7 @@ main{
 .plane svg{width:100%;fill:currentColor}
 
 .qcard{
-  background:
-    radial-gradient(90% 120% at 50% 0%, #171D25 0%, #10141A 70%);
+  background:radial-gradient(90% 120% at 50% 0%, #171D25 0%, #10141A 70%);
   border-radius:12px;padding:18px 14px 16px;margin-bottom:14px;
   border:1px solid #1E252E;
   box-shadow:inset 0 1px 0 rgba(255,255,255,.04), 0 8px 24px rgba(0,0,0,.45);
@@ -223,7 +220,7 @@ main{
 .eyebrow{font-size:10px;letter-spacing:.3em;color:var(--mute);text-align:center;margin-bottom:5px}
 .qlabel{font-family:var(--disp);font-size:17px;font-weight:600;letter-spacing:.14em;color:var(--amber);text-align:center;margin-bottom:16px;text-shadow:0 0 12px rgba(255,197,61,.3)}
 
-/* ---------- split-flap real ---------- */
+/* ---------- split-flap ---------- */
 .flapbox{display:flex;flex-wrap:wrap;justify-content:center;gap:.3em .45em;min-height:2.2em;position:relative;z-index:1;perspective:600px}
 .word{display:inline-flex;gap:2px}
 .ch{
@@ -259,7 +256,6 @@ main{
 .ch .leaf b{display:grid;place-items:center;position:absolute;left:0;right:0;top:0;height:200%;font-weight:700}
 .ch .seam{position:absolute;left:0;right:0;top:50%;height:1px;background:rgba(0,0,0,.65);z-index:3}
 
-/* bandera gigante */
 .flagbig{
   display:grid;place-items:center;margin:0 auto;
   width:160px;height:124px;font-size:82px;line-height:1;
@@ -270,7 +266,7 @@ main{
   transform-origin:top center;
 }
 .flagbig::after{content:"";position:absolute;left:0;right:0;top:50%;height:1px;background:rgba(0,0,0,.5)}
-.flagbig::before{ /* brillo cristal */
+.flagbig::before{
   content:"";position:absolute;inset:0;border-radius:14px;z-index:2;pointer-events:none;
   background:linear-gradient(155deg,rgba(255,255,255,.13) 0%,rgba(255,255,255,.04) 28%,transparent 45%);
 }
@@ -290,6 +286,27 @@ main{
 }
 .reinfo b{color:var(--ink)}
 .reinfo.show{animation:flipin .35s both}
+
+/* mapa mudo */
+.mapwrap{position:relative;z-index:1}
+#mapcv{width:100%;height:262px;display:block;border-radius:10px;
+  background:linear-gradient(#0C1118,#0A0E14);
+  box-shadow:inset 0 0 0 1px #1E252E, inset 0 2px 12px rgba(0,0,0,.6)}
+.maphint{font-size:9px;letter-spacing:.25em;color:var(--mute);text-align:center;margin-top:8px}
+
+/* modo escrito */
+.writebox{position:relative;z-index:1;margin-top:14px}
+.winput{
+  width:100%;background:linear-gradient(#12161C,#0E1116);color:var(--ink);
+  border:1px solid #2A323D;border-radius:9px;padding:14px;
+  font-family:var(--disp);font-size:21px;font-weight:600;letter-spacing:.08em;
+  text-align:center;text-transform:uppercase;outline:none;
+  box-shadow:inset 0 2px 8px rgba(0,0,0,.5);
+}
+.winput:focus{border-color:var(--amber);box-shadow:inset 0 2px 8px rgba(0,0,0,.5), 0 0 12px rgba(255,197,61,.25)}
+.winput.okw{border-color:var(--ok);color:var(--ok);box-shadow:0 0 14px rgba(61,217,126,.3)}
+.winput.badw{border-color:var(--bad);color:var(--bad);animation:shake .3s}
+.wbtns{display:flex;gap:8px;margin-top:10px}
 
 .opts{display:flex;flex-direction:column;gap:9px}
 .opt .dest{font-size:18px}
@@ -313,7 +330,6 @@ main{
 @keyframes shake{25%{transform:translateX(-5px)}75%{transform:translateX(5px)}}
 .taphint{text-align:center;font-size:10px;letter-spacing:.25em;color:var(--mute);margin-top:14px;animation:blink 1.4s steps(2) infinite}
 
-/* partículas de acierto y millas flotantes */
 .spark{position:absolute;width:5px;height:5px;border-radius:1px;background:var(--amber);z-index:5;pointer-events:none;
   animation:spark .6s cubic-bezier(.1,.8,.4,1) forwards}
 @keyframes spark{
@@ -332,7 +348,7 @@ main{
 #flash.go{animation:flash .45s ease-out}
 @keyframes flash{15%{opacity:1}100%{opacity:0}}
 
-/* ---------- overlay de vuelo ---------- */
+/* ---------- overlay ---------- */
 #ovl{
   position:fixed;inset:0;z-index:50;display:none;
   background:linear-gradient(#05070B 0%,#0B111A 40%,#131A23 78%,#171E27 100%);
@@ -354,14 +370,11 @@ main{
 }
 .cloud.far{filter:blur(3px);opacity:.4;z-index:1}
 @keyframes drift{from{transform:translateX(110vw) scale(var(--sc,1))}to{transform:translateX(-280px) scale(var(--sc,1))}}
-/* pista en perspectiva */
 .rwy{
   position:absolute;left:-30%;right:-30%;bottom:-40px;height:340px;z-index:1;
   transform:rotateX(58deg);transform-origin:50% 100%;
   background:
-    /* dashes centrales */
     repeating-linear-gradient(0deg, rgba(255,197,61,.85) 0 26px, transparent 26px 72px) 50% 0/10px 100% no-repeat,
-    /* luces de borde */
     repeating-linear-gradient(0deg, rgba(255,255,255,.8) 0 7px, transparent 7px 60px) 24% 0/5px 100% no-repeat,
     repeating-linear-gradient(0deg, rgba(255,255,255,.8) 0 7px, transparent 7px 60px) 76% 0/5px 100% no-repeat,
     linear-gradient(#10141A,#0B0E12);
@@ -415,7 +428,7 @@ main{
   animation:flapdrop .5s cubic-bezier(.2,.9,.3,1.15);transform-origin:top center;
   position:relative;
 }
-.pass::after{ /* textura papel */
+.pass::after{
   content:"";position:absolute;inset:0;opacity:.5;pointer-events:none;
   background:repeating-linear-gradient(0deg,transparent 0 3px,rgba(0,0,0,.012) 3px 4px);
 }
@@ -467,6 +480,7 @@ main{
 .bigbtn.amber{background:linear-gradient(#FFD976,#F0AE20);color:#3A2E08;
   box-shadow:inset 0 1px 0 rgba(255,255,255,.55), 0 4px 14px rgba(255,197,61,.25)}
 .bigbtn:active{transform:translateY(2px);box-shadow:none}
+.ghostbtn{color:var(--mute);font-size:11px;letter-spacing:.15em;padding:12px;width:100%;text-align:center;margin-top:10px}
 
 /* ---------- pasaporte ---------- */
 .regrow{margin-bottom:14px}
@@ -488,6 +502,31 @@ main{
   color:#3A2E08;background:linear-gradient(#FFD976,#F0AE20);border-radius:50%;
   width:12px;height:12px;display:grid;place-items:center;font-weight:700;
 }
+/* insignias */
+.badges{display:grid;grid-template-columns:repeat(auto-fill,minmax(76px,1fr));gap:8px}
+.badge{
+  display:flex;flex-direction:column;align-items:center;gap:5px;
+  background:linear-gradient(#1B212A,#161B22);border-radius:10px;padding:10px 4px 8px;
+  box-shadow:inset 0 1px 0 rgba(255,255,255,.05);
+}
+.badge i{font-style:normal;font-size:24px;filter:grayscale(1);opacity:.3}
+.badge span{font-size:8px;letter-spacing:.08em;color:var(--mute);text-align:center;line-height:1.3}
+.badge.got{outline:1px solid var(--amber);box-shadow:0 0 12px rgba(255,197,61,.2), inset 0 1px 0 rgba(255,255,255,.05)}
+.badge.got i{filter:none;opacity:1}
+.badge.got span{color:var(--ink)}
+/* turbulencias */
+.turb{display:flex;flex-direction:column;gap:6px;margin-bottom:8px}
+.turbrow{
+  display:grid;grid-template-columns:auto 1fr auto;gap:10px;align-items:center;
+  background:linear-gradient(#181D24,#141920);border-radius:8px;padding:9px 12px;
+  font-size:12px;letter-spacing:.06em;
+}
+.turbrow .tf{font-size:20px}
+.turbrow .tc{color:var(--mute);font-size:10px}
+.turbrow .tl{display:flex;gap:2px}
+.turbrow .tl i{width:8px;height:8px;border-radius:2px;background:#2A323D}
+.turbrow .tl i.on{background:var(--amber)}
+
 #peek{
   position:fixed;left:50%;transform:translateX(-50%);
   bottom:calc(14px + env(safe-area-inset-bottom));
@@ -609,10 +648,12 @@ const DATA = [
 ];
 const flag = iso => String.fromCodePoint(...[...iso].map(c=>0x1F1E6+c.charCodeAt(0)-65));
 const MODES = [
-  {id:"flag",    n:"BANDERA → PAÍS",  q:"¿DE QUÉ PAÍS ES ESTA BANDERA?"},
-  {id:"capital", n:"PAÍS → CAPITAL",  q:"¿CUÁL ES SU CAPITAL?"},
-  {id:"country", n:"CAPITAL → PAÍS",  q:"¿DE QUÉ PAÍS ES CAPITAL?"},
-  {id:"mix",     n:"VUELO MIXTO",     q:""},
+  {id:"flag",    n:"BANDERA → PAÍS",     q:"¿DE QUÉ PAÍS ES ESTA BANDERA?"},
+  {id:"capital", n:"PAÍS → CAPITAL",     q:"¿CUÁL ES SU CAPITAL?"},
+  {id:"country", n:"CAPITAL → PAÍS",     q:"¿DE QUÉ PAÍS ES CAPITAL?"},
+  {id:"map",     n:"MAPA MUDO",          q:"¿DÓNDE ESTÁ?"},
+  {id:"write",   n:"ESCRIBE LA CAPITAL", q:"¿CUÁL ES SU CAPITAL?"},
+  {id:"mix",     n:"VUELO MIXTO",        q:""},
 ];
 const QS_PER_ROUND = 10;
 const RANKS = [
@@ -622,7 +663,6 @@ const RANKS = [
   [4000,"COMANDANTE",4,false],
   [10000,"AS DEL AIRE",4,true],
 ];
-/* avión de línea, vista lateral, morro a la derecha */
 const PLANE = `<svg viewBox="0 0 120 40" aria-hidden="true"><path d="
 M14 15.2 L4.5 4.5 L10.5 4.5 L22.5 14.2
 L88 11.6
@@ -636,31 +676,186 @@ M46 24.5 L32 37.5 L40 37.5 L57.5 24.9 Z
 M52 25.3 L47.5 30.6 L61 30.6 A5.2 3.6 0 0 0 50.5 27.3 Z
 M30 14.6 L24 8.8 L28.5 8.8 L36.8 14.3 Z"/></svg>`;
 
+/* ============ GEO (mapa mudo) ============ */
+let GEO = null;
+fetch("world.geo.json").then(r=>r.json()).then(g=>{ GEO=g; }).catch(()=>{});
+const mappable = iso => !!(GEO && (GEO.polys[iso] || GEO.dots[iso]));
+function geoBBox(iso){
+  if(GEO.polys[iso]){
+    const m=[1e9,1e9,-1e9,-1e9];
+    for(const ring of GEO.polys[iso]) for(let i=0;i<ring.length;i+=2){
+      if(ring[i]<m[0])m[0]=ring[i]; if(ring[i+1]<m[1])m[1]=ring[i+1];
+      if(ring[i]>m[2])m[2]=ring[i]; if(ring[i+1]>m[3])m[3]=ring[i+1];
+    }
+    return m;
+  }
+  const d=GEO.dots[iso]; return [d[0]-1.2,d[1]-1.2,d[0]+1.2,d[1]+1.2];
+}
+function geoCentroid(iso){
+  if(GEO.dots[iso]) return GEO.dots[iso];
+  const ring=GEO.polys[iso][0];
+  let sx=0,sy=0,n=ring.length/2;
+  for(let i=0;i<ring.length;i+=2){ sx+=ring[i]; sy+=ring[i+1]; }
+  return [sx/n, sy/n];
+}
+function drawMap(cv, q, st){
+  if(!GEO) return;
+  const dpr=devicePixelRatio||1, W=cv.clientWidth, H=cv.clientHeight;
+  cv.width=W*dpr; cv.height=H*dpr;
+  const g=cv.getContext("2d"); g.scale(dpr,dpr);
+  let m=[1e9,1e9,-1e9,-1e9];
+  for(const c of q.opts){ const b=geoBBox(c[0]);
+    m[0]=Math.min(m[0],b[0]); m[1]=Math.min(m[1],b[1]); m[2]=Math.max(m[2],b[2]); m[3]=Math.max(m[3],b[3]); }
+  let dx=m[2]-m[0], dy=m[3]-m[1];
+  m[0]-=dx*.12+2; m[2]+=dx*.12+2; m[1]-=dy*.14+2; m[3]+=dy*.14+2;
+  dx=m[2]-m[0]; dy=m[3]-m[1];
+  const midLat=(m[1]+m[3])/2, kx=Math.max(.25,Math.cos(midLat*Math.PI/180));
+  const sc=Math.min(W/(dx*kx), H/dy);
+  const ox=(W-dx*kx*sc)/2, oy=(H-dy*sc)/2;
+  const X=lon=>ox+(lon-m[0])*kx*sc, Y=lat=>oy+(m[3]-lat)*sc;
+  cv.__proj={X,Y,invX:x=>(x-ox)/(kx*sc)+m[0], invY:y=>m[3]-(y-oy)/sc};
+  g.clearRect(0,0,W,H);
+  /* graticula radar */
+  g.strokeStyle="rgba(61,220,132,.06)"; g.lineWidth=1;
+  for(let lon=Math.ceil(m[0]/15)*15; lon<m[2]; lon+=15){ g.beginPath(); g.moveTo(X(lon),0); g.lineTo(X(lon),H); g.stroke(); }
+  for(let lat=Math.ceil(m[1]/15)*15; lat<m[3]; lat+=15){ g.beginPath(); g.moveTo(0,Y(lat)); g.lineTo(W,Y(lat)); g.stroke(); }
+  const candSet=new Set(q.opts.map(c=>c[0]));
+  const drawIso=(iso,fill,stroke,lw)=>{
+    const ps=GEO.polys[iso]; if(!ps) return;
+    g.beginPath();
+    for(const ring of ps){ g.moveTo(X(ring[0]),Y(ring[1]));
+      for(let i=2;i<ring.length;i+=2) g.lineTo(X(ring[i]),Y(ring[i+1]));
+      g.closePath(); }
+    g.fillStyle=fill; g.fill(); g.strokeStyle=stroke; g.lineWidth=lw; g.stroke();
+  };
+  for(const iso of Object.keys(GEO.polys)) if(!candSet.has(iso)) drawIso(iso,"#1D242D","#2A333E",1);
+  cv.__small=[];
+  q.opts.forEach((c,i)=>{
+    const iso=c[0];
+    const isAns=st.answered && iso===q.target[0];
+    const isBad=st.answered && iso===st.picked && iso!==q.target[0];
+    const fill=isAns?"rgba(61,217,126,.42)":isBad?"rgba(242,85,85,.42)":"rgba(255,197,61,.28)";
+    const stroke=isAns?"#3DD97E":isBad?"#F25555":"#FFC53D";
+    const b=geoBBox(iso);
+    const small=!GEO.polys[iso] || ((b[2]-b[0])*kx*sc<26 && (b[3]-b[1])*sc<26);
+    cv.__small[i]=small;
+    if(small){
+      const [lo,la]=geoCentroid(iso);
+      g.beginPath(); g.arc(X(lo),Y(la),11,0,7);
+      g.fillStyle=fill; g.fill(); g.strokeStyle=stroke; g.lineWidth=2; g.stroke();
+    } else drawIso(iso,fill,stroke,2);
+  });
+  if(st.answered){
+    const [lo,la]=geoCentroid(q.target[0]);
+    g.font="600 13px 'Avenir Next Condensed','Roboto Condensed',Arial,sans-serif";
+    const t=q.target[1].toUpperCase(), tw=g.measureText(t).width;
+    const tx=Math.min(Math.max(X(lo)-tw/2,4),W-tw-4), ty=Math.max(Y(la)-16,14);
+    g.fillStyle="rgba(11,14,17,.85)"; g.fillRect(tx-5,ty-11,tw+10,17);
+    g.fillStyle="#EFEADB"; g.fillText(t,tx,ty+2);
+  }
+}
+function hitMap(cv,q,px,py){
+  const {X,Y,invX,invY}=cv.__proj;
+  const lon=invX(px), lat=invY(py);
+  let mi=-1, md=17;
+  q.opts.forEach((c,i)=>{
+    if(!cv.__small[i]) return;
+    const [lo,la]=geoCentroid(c[0]);
+    const d=Math.hypot(X(lo)-px, Y(la)-py);
+    if(d<md){ md=d; mi=i; }
+  });
+  if(mi>=0) return mi;
+  let pi=-1, pa=1e18;
+  q.opts.forEach((c,i)=>{
+    const ps=GEO.polys[c[0]]; if(!ps) return;
+    let inside=false;
+    for(const ring of ps){
+      let inR=false;
+      for(let a=0,b=ring.length-2; a<ring.length; b=a, a+=2){
+        const x1=ring[a],y1=ring[a+1],x2=ring[b],y2=ring[b+1];
+        if((y1>lat)!==(y2>lat) && lon<(x2-x1)*(lat-y1)/(y2-y1)+x1) inR=!inR;
+      }
+      if(inR){ inside=true; break; }
+    }
+    if(inside){ const bb=geoBBox(c[0]), area=(bb[2]-bb[0])*(bb[3]-bb[1]);
+      if(area<pa){ pa=area; pi=i; } }
+  });
+  return pi;
+}
+
 /* ============ ESTADO ============ */
+const DAY = 86400000;
 const S = load();
 function load(){
-  const def = {millas:0, best:0, rondas:0, region:"all", sound:true, stats:{}, lastRank:0, hints:0};
+  const def = {millas:0, best:0, rondas:0, region:"all", sound:true, stats:{}, lastRank:0, hints:0,
+               badges:{}, lastDaily:"", dayStreak:0, dailyHits:-1, flags:{}, offlineOk:false};
   try{
     const s = JSON.parse(localStorage.getItem("tm.state"));
-    if(s && s.stats){ const m = Object.assign(def, s); m.lastRank = m.lastRank ?? rankIdx(m.millas); return m; }
+    if(s && s.stats){
+      const m = Object.assign(def, s);
+      m.lastRank = m.lastRank ?? rankIdx(m.millas);
+      for(const k of Object.keys(m.stats))              /* migración: nivel → [nivel, fecha] */
+        if(!Array.isArray(m.stats[k])) m.stats[k]=[m.stats[k], Date.now()];
+      return m;
+    }
   }catch(e){}
   return def;
 }
 function save(){ localStorage.setItem("tm.state", JSON.stringify(S)); }
 const key = (iso,m)=> iso+":"+m;
-const lvl = (iso,m)=> (S.stats[key(iso,m)]||0);
-function bump(iso,m,ok){
-  const k = key(iso,m);
-  S.stats[k] = Math.max(0, Math.min(3, (S.stats[k]||0) + (ok?1:-1)));
+function lvl(iso,m){                                    /* nivel efectivo con caducidad */
+  const v = S.stats[key(iso,m)];
+  if(!v) return 0;
+  const d = (Date.now()-v[1])/DAY;
+  const dec = d>90?3 : d>30?2 : d>10?1 : 0;
+  return Math.max(0, v[0]-dec);
 }
+function bump(iso,m,ok){
+  const l = lvl(iso,m);                                 /* parte del nivel ya decaído */
+  S.stats[key(iso,m)] = [Math.max(0, Math.min(3, l+(ok?1:-1))), Date.now()];
+}
+const seen = (iso)=> ["flag","capital","country","map"].some(m=>S.stats[key(iso,m)]);
 const domScore = iso => lvl(iso,"flag")+lvl(iso,"capital")+lvl(iso,"country");
 const isDom = iso => lvl(iso,"flag")>=2 && lvl(iso,"capital")>=2 && lvl(iso,"country")>=2;
+const domCount = ()=> DATA.filter(c=>isDom(c[0])).length;
+const regComplete = id => DATA.filter(c=>c[3]===id).every(c=>isDom(c[0]));
 const pool = ()=> S.region==="all" ? DATA : DATA.filter(c=>c[3]===S.region);
 const fmt = n => n.toLocaleString("es-ES");
 function rankIdx(millas){ let i=0; RANKS.forEach((r,j)=>{ if(millas>=r[0]) i=j; }); return i; }
 function epaulHTML(i){
   const [,,g,star] = RANKS[i];
   return `<span class="epaul">${"<i></i>".repeat(g)}${star?'<i class="star">★</i>':""}</span>`;
+}
+function localDate(off=0){ const d=new Date(); d.setDate(d.getDate()+off);
+  return `${d.getFullYear()}-${String(d.getMonth()+1).padStart(2,"0")}-${String(d.getDate()).padStart(2,"0")}`; }
+
+/* ============ INSIGNIAS ============ */
+const BADGES = [
+  ["despegue","🛫","PRIMER VUELO", s=>s.rondas>=1],
+  ["diario","☀️","VUELO DEL DÍA", s=>!!s.lastDaily],
+  ["perfecto","💯","VUELO PERFECTO", s=>!!s.flags.perfect],
+  ["racha10","🔥","RACHA ×10", s=>s.best>=10],
+  ["m1k","🎖️","1.000 MILLAS", s=>s.millas>=1000],
+  ["m10k","👑","10.000 MILLAS", s=>s.millas>=10000],
+  ["s10","🛂","10 SELLOS", ()=>domCount()>=10],
+  ["s50","🌐","50 SELLOS", ()=>domCount()>=50],
+  ["s100","🗺️","100 SELLOS", ()=>domCount()>=100],
+  ["eu","🏰","EUROPA COMPLETA", ()=>regComplete("eu")],
+  ["am","🗽","AMÉRICA COMPLETA", ()=>regComplete("am")],
+  ["as","⛩️","ASIA COMPLETA", ()=>regComplete("as")],
+  ["af","🦁","ÁFRICA COMPLETA", ()=>regComplete("af")],
+  ["oc","🏝️","OCEANÍA COMPLETA", ()=>regComplete("oc")],
+  ["d7","📅","7 DÍAS VOLANDO", s=>s.dayStreak>=7],
+  ["asaire","⭐","AS DEL AIRE", s=>rankIdx(s.millas)===RANKS.length-1],
+];
+function checkBadges(delay=2400){
+  const nuevos=[];
+  for(const [id,emo,nom,cond] of BADGES)
+    if(!S.badges[id] && cond(S)){ S.badges[id]=Date.now(); nuevos.push([emo,nom]); }
+  if(nuevos.length){
+    save();
+    nuevos.forEach(([e,n],i)=> setTimeout(()=>{ showPeek(`${e} <b>INSIGNIA · ${esc(n)}</b>`, true); selloDing(); }, delay+i*2600));
+  }
 }
 
 /* ============ AUDIO: terminal de aeropuerto, 100% sintetizado ============ */
@@ -672,13 +867,11 @@ function ac(){
     comp.threshold.value=-18; comp.knee.value=22; comp.ratio.value=5;
     comp.connect(AC.destination);
     MASTER = AC.createGain(); MASTER.gain.value=.65; MASTER.connect(comp);
-    /* reverb de hall: impulso de ruido estéreo con caída exponencial */
     const rdur=1.9, rlen=AC.sampleRate*rdur, imp=AC.createBuffer(2,rlen,AC.sampleRate);
     for(let ch=0;ch<2;ch++){ const d=imp.getChannelData(ch);
       for(let i=0;i<rlen;i++) d[i]=(Math.random()*2-1)*Math.pow(1-i/rlen,2.7); }
     const cv=AC.createConvolver(); cv.buffer=imp;
     WET = AC.createGain(); WET.gain.value=.4; WET.connect(cv); cv.connect(MASTER);
-    /* ruido blanco reutilizable */
     const nlen=AC.sampleRate*2, nb=AC.createBuffer(1,nlen,AC.sampleRate), nd=nb.getChannelData(0);
     for(let i=0;i<nlen;i++) nd[i]=Math.random()*2-1;
     NOISE = nb;
@@ -722,31 +915,30 @@ function noise({t=0,dur=.1,g=.06,type="bandpass",f=1000,fEnd=0,q=.9,wet=0,swell=
     src.start(t0, Math.random()*1.2); src.stop(t0+dur+.05);
   }catch(e){}
 }
-/* — vocabulario sonoro de la terminal — */
-const tick = ()=> noise({dur:.013,g:.04,type:"highpass",f:1700+Math.random()*1100});      // clack de lamela
-const good = (streak=1)=>{                                                                 // campanita que sube con la racha
+const tick = ()=> noise({dur:.013,g:.04,type:"highpass",f:1700+Math.random()*1100});
+const good = (streak=1)=>{
   const f = 587.33*Math.pow(2, Math.min(streak-1,7)/12);
   tone({f,f2:f*2,d:.38,g:.07,wet:.5});
   tone({f:f*1.5,t:.08,d:.3,g:.03,wet:.5});
   noise({dur:.05,g:.018,type:"highpass",f:6500});
 };
-const bad = ()=>{                                                                          // acceso denegado
+const bad = ()=>{
   tone({f:215,glideTo:125,type:"sawtooth",d:.3,g:.055});
   tone({f:66,t:.02,d:.22,g:.12});
 };
-const paChime = (notes=[659.25,523.25])=>                                                  // megafonía bing-bong
+const paChime = (notes=[659.25,523.25])=>
   notes.forEach((f,i)=> tone({f,f2:f*2,type:"triangle",t:i*.3,a:.01,d:.75,g:.05,wet:1}));
-const turbine = (up=true)=>{                                                               // reactor por capas
+const turbine = (up=true)=>{
   noise({dur:1.7,g:.15,type:"bandpass",f:up?260:1500,fEnd:up?1650:300,q:.8,swell:1});
   tone({f:up?68:112,glideTo:up?118:62,type:"sawtooth",d:1.65,g:.05});
   tone({f:up?420:1250,glideTo:up?1350:420,d:1.6,g:.016});
-  if(!up){ tone({f:58,t:1.05,d:.18,g:.17}); noise({dur:.15,g:.05,type:"highpass",f:900,t:1.05}); } // ruedas
+  if(!up){ tone({f:58,t:1.05,d:.18,g:.17}); noise({dur:.15,g:.05,type:"highpass",f:900,t:1.05}); }
 };
-const thud = ()=>{ tone({f:72,d:.16,g:.22}); noise({dur:.05,g:.07,type:"lowpass",f:1100}); };       // sello
-const selloDing = ()=> tone({f:880,f2:1760,d:.65,g:.05,wet:1.2});                          // aviso de cinturones
-const fanfare = ()=>                                                                       // ascenso de rango
+const thud = ()=>{ tone({f:72,d:.16,g:.22}); noise({dur:.05,g:.07,type:"lowpass",f:1100}); };
+const selloDing = ()=> tone({f:880,f2:1760,d:.65,g:.05,wet:1.2});
+const fanfare = ()=>
   [523.25,659.25,783.99,1046.5].forEach((f,i)=> tone({f,f2:f*2,type:"triangle",t:i*.13,d:i===3?.9:.3,g:.055,wet:.8}));
-const perfectJingle = ()=>                                                                 // ronda perfecta
+const perfectJingle = ()=>
   [587.33,739.99,880,1174.66,1479.98].forEach((f,i)=> tone({f,type:"triangle",t:i*.11,d:.55,g:.05,wet:.9}));
 
 /* ============ SPLIT-FLAP 3D ============ */
@@ -754,7 +946,6 @@ const REDUCED = matchMedia("(prefers-reduced-motion: reduce)").matches;
 const GLYPHS = "ABCDEFGHIJKLMNÑOPQRSTUVWXYZ";
 let flapTimers = [];
 function clearFlaps(){ flapTimers.forEach(clearInterval); flapTimers=[]; }
-/* celda con lamela que gira de verdad */
 function makeCell(){
   const el = document.createElement("span"); el.className = "ch";
   el.innerHTML = `<span class="half htop"><b></b></span><span class="half hbot"><b></b></span><span class="leaf"><b></b></span><span class="seam"></span>`;
@@ -765,8 +956,8 @@ function makeCell(){
   function set(ch, animate){
     if(!animate || REDUCED || ch===cur){ topB.textContent=botB.textContent=ch; cur=ch; return; }
     const old = cur; cur = ch;
-    topB.textContent = ch;              // la nueva ya asoma arriba, tras la lamela
-    leafB.textContent = old;            // la lamela lleva la vieja y cae
+    topB.textContent = ch;
+    leafB.textContent = old;
     leaf.style.display = "block";
     const a = leaf.animate(
       [{transform:"rotateX(0deg)"},{transform:"rotateX(-88deg)"}],
@@ -801,7 +992,7 @@ function flapText(el, text){
 
 /* ============ PARTÍCULAS ============ */
 function burst(el, color){
-  const r = el.getBoundingClientRect(), host = el.closest(".rowbtn") || el;
+  const host = el.closest(".rowbtn") || el.parentElement || el;
   for(let i=0;i<9;i++){
     const s = document.createElement("i"); s.className = "spark";
     const a = (i/9)*Math.PI*2 + Math.random()*.5;
@@ -845,7 +1036,7 @@ function confetti(){
   })();
 }
 
-/* ============ OVERLAY DE VUELO ============ */
+/* ============ OVERLAY ============ */
 const ovl = document.getElementById("ovl");
 let ovlT = null;
 function skyBits(){
@@ -896,7 +1087,7 @@ function rankScene(i, done){
 /* ============ PANTALLAS ============ */
 const app = document.getElementById("app");
 const peek = document.getElementById("peek");
-let round = null, peekT = null;
+let round = null, peekT = null, pendingReload = false;
 
 function esc(s){ return s.replace(/&/g,"&amp;").replace(/</g,"&lt;"); }
 function showPeek(html, sello){
@@ -904,8 +1095,10 @@ function showPeek(html, sello){
   peek.innerHTML = html;
   clearTimeout(peekT); peekT = setTimeout(()=>peek.classList.remove("show"), 2400);
 }
+const dailyDone = ()=> S.lastDaily === localDate();
 
 function home(){
+  if(pendingReload){ location.reload(); return; }
   clearFlaps(); round = null;
   const p = pool(), dom = p.filter(c=>isDom(c[0])).length;
   const ri = rankIdx(S.millas), next = RANKS[ri+1];
@@ -913,6 +1106,8 @@ function home(){
   const regions = [["all","MUNDO"],...Object.entries(R)];
   const pend = p.filter(c=>!isDom(c[0])).slice(0,24);
   const beltFlags = pend.map(c=>`<span>${flag(c[0])}</span>`).join("");
+  const dl = dailyDone();
+  const fecha = new Date().toLocaleDateString("es-ES",{weekday:"short",day:"numeric",month:"short"}).toUpperCase();
   app.innerHTML = `
     <div class="chips">${regions.map(([id,n])=>
       `<button class="chip${S.region===id?" sel":""}" data-r="${id}">${n}</button>`).join("")}
@@ -922,10 +1117,15 @@ function home(){
       <div class="rankname"><small>LICENCIA DE PILOTO</small>${RANKS[ri][1]}</div>
       <div class="ranknext">${next?`${fmt(next[0]-S.millas)} MI PARA ${next[1]}`:"RANGO MÁXIMO"}<div class="rankbar"><i style="width:${prog}%"></i></div></div>
     </div>
+    <button class="rowbtn flipin sheen" id="dailyRow">
+      <span class="gate">☀️</span>
+      <span class="dest"><small>VUELO DEL DÍA · ${fecha}${S.dayStreak>1?` · 🔥${S.dayStreak}`:""}</small>RUTA SORPRESA</span>
+      <span class="status${dl?"":" blink"}"${dl?' style="color:var(--mute);text-shadow:none"':""}>${dl?`HECHO ${S.dailyHits>=0?S.dailyHits+"/10":""}`:"EMBARQUE"}</span>
+    </button>
     <div class="secline"><h2>PUERTAS DE EMBARQUE</h2></div>
     <div class="board">
       ${MODES.map((m,i)=>`
-        <button class="rowbtn flipin sheen" style="animation-delay:${.06*(i+1)}s" data-m="${m.id}">
+        <button class="rowbtn flipin sheen" style="animation-delay:${.05*(i+1)}s" data-m="${m.id}">
           <span class="gate">G${i+1}</span>
           <span class="dest"><small>VUELO GEO-${String(i+1).padStart(2,"0")}</small>${m.n}</span>
           <span class="status blink">EMBARQUE</span>
@@ -945,67 +1145,96 @@ function home(){
       <div class="belt">${beltFlags}${beltFlags}</div></div>`:""}`;
   app.querySelectorAll(".chip").forEach(b=>b.onclick=()=>{ S.region=b.dataset.r; save(); home(); });
   app.querySelectorAll("[data-m]").forEach(b=>b.onclick=()=>startRound(b.dataset.m));
+  document.getElementById("dailyRow").onclick = startDaily;
   document.getElementById("passport").onclick = passport;
 }
 
-/* ---------- ronda ---------- */
+/* ---------- preguntas ---------- */
+const statModeOf = real => real==="write" ? "capital" : real;
 function weightOf(iso, m){
-  const l = lvl(iso,m);
+  const l = lvl(iso, statModeOf(m));
   return l===0 ? 4 : l===1 ? 2.5 : l===2 ? 1.2 : 0.4;
 }
-function pickWeighted(cands, m){
+function pickWeighted(cands, m, rand){
   let tot = 0; const ws = cands.map(c=>{ const w=weightOf(c[0], m); tot+=w; return w; });
-  let r = Math.random()*tot;
+  let r = rand()*tot;
   for(let i=0;i<cands.length;i++){ r-=ws[i]; if(r<=0) return cands[i]; }
   return cands[cands.length-1];
 }
-function makeQuestion(modeId, used){
-  const real = modeId==="mix" ? ["flag","capital","country"][Math.floor(Math.random()*3)] : modeId;
-  const cands = pool().filter(c=>!used.has(c[0]));
-  const target = pickWeighted(cands, real);
-  const ansText = c => real==="capital" ? c[2] : c[1];
-  const others = DATA.filter(c => c[0]!==target[0] && ansText(c)!==ansText(target));
+function makeQuestion(modeId, used, rand=Math.random, forcedIso=null){
+  const mixPool = ["flag","capital","country"].concat(GEO?["map"]:[]);
+  const real = modeId==="mix" ? mixPool[Math.floor(rand()*mixPool.length)] : modeId;
+  let cands = pool().filter(c=>!used.has(c[0]));
+  if(real==="map") cands = cands.filter(c=>mappable(c[0]));
+  if(!cands.length) cands = pool();
+  const target = forcedIso ? DATA.find(c=>c[0]===forcedIso) : pickWeighted(cands, real, rand);
+  const ansText = c => (real==="capital"||real==="write") ? c[2] : c[1];
+  let others = DATA.filter(c => c[0]!==target[0] && ansText(c)!==ansText(target));
+  if(real==="map") others = others.filter(c=>mappable(c[0]));
   const sameReg = others.filter(c=>c[3]===target[3]);
   const opts = [target];
-  const seen = new Set([ansText(target)]);
+  const seenTxt = new Set([ansText(target)]);
   const src = [...sameReg];
   while(opts.length<4){
-    const bag = src.length ? src : others.filter(c=>!seen.has(ansText(c)));
+    const bag = src.length ? src : others.filter(c=>!seenTxt.has(ansText(c)));
     if(!bag.length) break;
-    const i = Math.floor(Math.random()*bag.length);
+    const i = Math.floor(rand()*bag.length);
     const c = bag===src ? src.splice(i,1)[0] : bag[i];
-    if(seen.has(ansText(c))) continue;
-    seen.add(ansText(c)); opts.push(c);
+    if(seenTxt.has(ansText(c))) continue;
+    seenTxt.add(ansText(c)); opts.push(c);
   }
-  for(let i=opts.length-1;i>0;i--){ const j=Math.floor(Math.random()*(i+1)); [opts[i],opts[j]]=[opts[j],opts[i]]; }
+  for(let i=opts.length-1;i>0;i--){ const j=Math.floor(rand()*(i+1)); [opts[i],opts[j]]=[opts[j],opts[i]]; }
   return {mode:real, target, opts, answer:opts.indexOf(target)};
 }
-function startRound(modeId){
-  round = {modeId, n:0, hits:0, streak:0, maxStreak:0, gained:0, used:new Set(), hist:[], newDom:[]};
+function startRound(modeId, o={}){
+  if(modeId==="map" && !GEO){ showPeek("🛰️ <b>CARGANDO MAPA…</b> PRUEBA EN UN MOMENTO"); return; }
+  round = {modeId, n:0, hits:0, streak:0, maxStreak:0, gained:0, used:new Set(), hist:[], newDom:[],
+           forced:o.forced||null, len:o.forced?Math.min(o.forced.length,QS_PER_ROUND):QS_PER_ROUND};
   const m = MODES.find(x=>x.id===modeId);
   flightScene("takeoff",
-    `VUELO GEO-0${MODES.indexOf(m)+1} · DESTINO ${RCODE[S.region]}`,
-    `<b>${m.n}</b> · DESPEGUE`,
+    o.forced ? "ZONA DE TURBULENCIAS" : `VUELO GEO-0${MODES.indexOf(m)+1} · DESTINO ${RCODE[S.region]}`,
+    `<b>${o.forced?"REPASO":m.n}</b> · DESPEGUE`,
     nextQuestion);
+}
+/* vuelo del día: misma ruta para todo el mundo */
+function mulberry32(a){ return function(){ a|=0; a=a+0x6D2B79F5|0; let t=Math.imul(a^a>>>15,1|a); t=t+Math.imul(t^t>>>7,61|t)^t; return ((t^t>>>14)>>>0)/4294967296; } }
+function startDaily(){
+  if(dailyDone()){ showPeek("☀️ <b>YA HAS VOLADO HOY</b> · VUELVE MAÑANA"); return; }
+  const d=new Date(), seed=d.getFullYear()*10000+(d.getMonth()+1)*100+d.getDate();
+  const rng=mulberry32(seed);
+  const modes=["flag","capital","country"].concat(GEO?["map"]:[]);
+  const isos=[...DATA];
+  for(let i=isos.length-1;i>0;i--){ const j=Math.floor(rng()*(i+1)); [isos[i],isos[j]]=[isos[j],isos[i]]; }
+  const plan=isos.slice(0,QS_PER_ROUND).map(c=>({iso:c[0], mode:modes[Math.floor(rng()*modes.length)]}));
+  round={modeId:"daily", n:0, hits:0, streak:0, maxStreak:0, gained:0, used:new Set(), hist:[], newDom:[],
+         daily:plan, rng, len:QS_PER_ROUND};
+  flightScene("takeoff", `VUELO DEL DÍA · ${localDate()}`, "<b>RUTA SORPRESA</b> · DESPEGUE", nextQuestion);
 }
 let advanceT = null, canAdvance = false;
 function nextQuestion(){
   canAdvance = false;
-  if(round.n >= QS_PER_ROUND){
+  if(round.n >= round.len){
     flightScene("landing", "FIN DE TRAYECTO", "<b>ATERRIZANDO</b>…", results);
     return;
   }
-  round.q = makeQuestion(round.modeId, round.used);
+  if(round.daily){
+    const spec = round.daily[round.n];
+    round.q = makeQuestion(spec.mode, round.used, round.rng, spec.iso);
+  } else if(round.forced){
+    round.q = makeQuestion("mix", round.used, Math.random, round.forced[round.n]);
+  } else {
+    round.q = makeQuestion(round.modeId, round.used);
+  }
   round.used.add(round.q.target[0]);
   round.n++;
   renderQuestion();
 }
 function routeHTML(){
-  const stops = Array.from({length:QS_PER_ROUND}, (_,i)=>{
+  const stops = Array.from({length:round.len}, (_,i)=>{
     const h = round.hist[i];
     return `<i class="${h===true?"ok":h===false?"bad":""}"></i>`;
   }).join("");
-  const pct = ((round.n-1)/(QS_PER_ROUND-1))*100;
+  const pct = round.len>1 ? ((round.n-1)/(round.len-1))*100 : 0;
   return `
     <div class="route">
       <span class="apt lit">HUB</span>
@@ -1020,7 +1249,11 @@ function routeHTML(){
 function renderQuestion(){
   const {q, streak} = round;
   const m = MODES.find(x=>x.id===q.mode);
-  const isFlagQ = q.mode==="flag";
+  const isFlagQ = q.mode==="flag", isMapQ = q.mode==="map", isWriteQ = q.mode==="write";
+  const middle =
+    isFlagQ ? `<div class="flagbig">${flag(q.target[0])}</div>` :
+    isMapQ  ? `<div class="mapwrap"><canvas id="mapcv"></canvas><div class="maphint">TOCA EL PAÍS EN EL MAPA</div></div>` :
+              `<div class="flapbox" id="flap"></div>`;
   app.innerHTML = `
     <div class="qtop">
       <button class="back" id="back">← TERMINAL</button>
@@ -1030,36 +1263,107 @@ function renderQuestion(){
     <div class="qcard">
       ${isFlagQ?'<div class="radar"></div>':""}
       <div class="eyebrow">VUELO GEO-${String(round.n).padStart(2,"0")} · ${R[q.target[3]]}</div>
-      <div class="qlabel">${m.q}</div>
-      ${isFlagQ
-        ? `<div class="flagbig">${flag(q.target[0])}</div>`
-        : `<div class="flapbox" id="flap"></div>`}
+      <div class="qlabel">${m.q}${isMapQ?` ${esc(q.target[1].toUpperCase())} ${flag(q.target[0])}`:""}</div>
+      ${middle}
       <div class="reinfo" id="reinfo"></div>
     </div>
-    <div class="opts">
-      ${q.opts.map((c,i)=>{
-        const txt = q.mode==="capital" ? c[2] : c[1];
-        return `<button class="rowbtn opt flipin" style="animation-delay:${.05*i}s" data-i="${i}">
-          <span class="gate">${"ABCD"[i]}</span>
-          <span class="dest">${q.mode==="country"?`<span class="flg">${flag(c[0])}</span> `:""}${esc(txt.toUpperCase())}</span>
-          <span class="status"></span>
-        </button>`;
-      }).join("")}
-    </div>
+    ${isWriteQ ? `
+      <div class="writebox">
+        <input id="win" class="winput" autocomplete="off" autocorrect="off" spellcheck="false" enterkeyhint="done" placeholder="ESCRIBE LA CAPITAL…">
+        <div class="wbtns">
+          <button class="bigbtn" id="wskip">NO LO SÉ</button>
+          <button class="bigbtn amber" id="wok">COMPROBAR</button>
+        </div>
+      </div>` :
+    isMapQ ? "" : `
+      <div class="opts">
+        ${q.opts.map((c,i)=>{
+          const txt = q.mode==="capital" ? c[2] : c[1];
+          return `<button class="rowbtn opt flipin" style="animation-delay:${.05*i}s" data-i="${i}">
+            <span class="gate">${"ABCD"[i]}</span>
+            <span class="dest">${q.mode==="country"?`<span class="flg">${flag(c[0])}</span> `:""}${esc(txt.toUpperCase())}</span>
+            <span class="status"></span>
+          </button>`;
+        }).join("")}
+      </div>`}
     <div id="hint"></div>`;
   document.getElementById("back").onclick = home;
   const fx = document.getElementById("flap");
   if(fx){
-    const label = q.mode==="capital" ? `${q.target[1]}` : q.target[2];
+    const label = (q.mode==="capital"||q.mode==="write") ? q.target[1] : q.target[2];
     flapText(fx, label);
-    if(q.mode==="capital"){
+    if(q.mode==="capital"||q.mode==="write"){
       const f = document.createElement("div");
       f.style.cssText="text-align:center;font-size:30px;margin-top:12px;position:relative;z-index:1;filter:drop-shadow(0 2px 4px rgba(0,0,0,.5))";
       f.textContent = flag(q.target[0]);
       fx.after(f);
     }
   }
+  if(isMapQ){
+    const cv = document.getElementById("mapcv");
+    requestAnimationFrame(()=>drawMap(cv, q, {answered:false}));
+    let done=false;
+    cv.addEventListener("click", e=>{
+      if(done) return;
+      const r=cv.getBoundingClientRect();
+      const idx=hitMap(cv, q, e.clientX-r.left, e.clientY-r.top);
+      if(idx<0) return;
+      done=true;
+      answerMap(idx, cv);
+    });
+  }
+  if(isWriteQ){
+    const win=document.getElementById("win");
+    document.getElementById("wok").onclick = ()=>answerWrite(false);
+    document.getElementById("wskip").onclick = ()=>answerWrite(true);
+    win.addEventListener("keydown", e=>{ if(e.key==="Enter"){ e.preventDefault(); answerWrite(false); } });
+    setTimeout(()=>win.focus(), REDUCED?0:600);
+  }
   app.querySelectorAll(".opt").forEach(b=>b.onclick=()=>answer(+b.dataset.i));
+}
+/* núcleo común de respuesta */
+function settle(ok, base){
+  const q = round.q;
+  const wasDom = isDom(q.target[0]);
+  bump(q.target[0], statModeOf(q.mode), ok);
+  round.hist.push(ok);
+  if(!wasDom && isDom(q.target[0])) round.newDom.push(q.target);
+  const info = document.getElementById("reinfo");
+  if(info){
+    info.innerHTML = `${flag(q.target[0])} <b>${esc(q.target[1].toUpperCase())}</b> · ${esc(q.target[2].toUpperCase())}`;
+    info.classList.add("show");
+  }
+  const altEl = document.getElementById("alt");
+  let p = 0;
+  if(ok){
+    round.hits++; round.streak++;
+    good(round.streak);
+    round.maxStreak = Math.max(round.maxStreak, round.streak);
+    S.best = Math.max(S.best, round.streak);
+    p = base + round.streak*2;
+    round.gained += p; S.millas += p;
+    if(altEl){ altEl.textContent=`ALT ${fmt(round.streak*1000)} FT`; altEl.classList.add("up"); altEl.classList.toggle("hot", round.streak>=3); }
+    if(navigator.vibrate) navigator.vibrate(15);
+  }else{
+    bad();
+    round.streak = 0;
+    if(altEl){ altEl.textContent="ALT 0 FT"; altEl.classList.remove("hot"); }
+    const fl = document.getElementById("flash");
+    fl.classList.remove("go"); void fl.offsetWidth; fl.classList.add("go");
+    if(navigator.vibrate) navigator.vibrate([40,40,40]);
+  }
+  save();
+  return p;
+}
+function afterAnswer(ok){
+  canAdvance = true;
+  if(S.hints<3){
+    S.hints++; save();
+    const h = document.getElementById("hint");
+    if(h) h.innerHTML = `<div class="taphint">TOCA PARA CONTINUAR</div>`;
+  }
+  clearTimeout(advanceT);
+  advanceT = setTimeout(advance, ok?1400:2400);
 }
 function answer(i){
   clearFlaps();
@@ -1069,46 +1373,45 @@ function answer(i){
   btns[q.answer].classList.add("ok");
   btns[q.answer].querySelector(".status").textContent = "CORRECTO";
   btns.forEach((b,j)=>{ if(j!==q.answer && j!==i) b.classList.add("dim"); });
-  const wasDom = isDom(q.target[0]);
-  bump(q.target[0], q.mode, ok);
-  round.hist.push(ok);
-  if(!wasDom && isDom(q.target[0])) round.newDom.push(q.target);
-  const info = document.getElementById("reinfo");
-  info.innerHTML = `${flag(q.target[0])} <b>${esc(q.target[1].toUpperCase())}</b> · ${esc(q.target[2].toUpperCase())}`;
-  info.classList.add("show");
-  const altEl = document.getElementById("alt");
-  if(ok){
-    round.hits++; round.streak++;
-    good(round.streak);
-    round.maxStreak = Math.max(round.maxStreak, round.streak);
-    S.best = Math.max(S.best, round.streak);
-    const pts = 10 + round.streak*2;
-    round.gained += pts; S.millas += pts;
-    altEl.textContent = `ALT ${fmt(round.streak*1000)} FT`;
-    altEl.classList.add("up");
-    altEl.classList.toggle("hot", round.streak>=3);
-    burst(btns[q.answer].querySelector(".gate"), "var(--ok)");
-    flyMi(btns[q.answer], pts);
-    if(navigator.vibrate) navigator.vibrate(15);
-  }else{
-    bad();
-    round.streak = 0;
-    altEl.textContent = "ALT 0 FT";
-    altEl.classList.remove("hot");
-    btns[i].classList.add("bad","shake");
-    btns[i].querySelector(".status").textContent = "ERROR";
-    const fl = document.getElementById("flash");
-    fl.classList.remove("go"); void fl.offsetWidth; fl.classList.add("go");
-    if(navigator.vibrate) navigator.vibrate([40,40,40]);
-  }
-  save();
-  canAdvance = true;
-  if(S.hints<3){
-    S.hints++; save();
-    document.getElementById("hint").innerHTML = `<div class="taphint">TOCA PARA CONTINUAR</div>`;
-  }
-  clearTimeout(advanceT);
-  advanceT = setTimeout(advance, ok?1400:2400);
+  if(!ok){ btns[i].classList.add("bad","shake"); btns[i].querySelector(".status").textContent="ERROR"; }
+  const p = settle(ok, 10);
+  if(ok){ burst(btns[q.answer].querySelector(".gate"), "var(--ok)"); flyMi(btns[q.answer], p); }
+  afterAnswer(ok);
+}
+function answerMap(idx, cv){
+  const q = round.q, ok = idx===q.answer;
+  drawMap(cv, q, {answered:true, picked:q.opts[idx][0]});
+  const p = settle(ok, 12);
+  if(ok) flyMi(cv.parentElement, p);
+  afterAnswer(ok);
+}
+const norm = s => s.toLowerCase().normalize("NFD").replace(/[̀-ͯ]/g,"").replace(/[^a-z0-9]/g,"");
+function lev(a,b){
+  const m=a.length, n=b.length;
+  if(Math.abs(m-n)>2) return 9;
+  const dp=Array.from({length:m+1},(_,i)=>{ const r=Array(n+1).fill(0); r[0]=i; return r; });
+  for(let j=0;j<=n;j++) dp[0][j]=j;
+  for(let i=1;i<=m;i++) for(let j=1;j<=n;j++)
+    dp[i][j]=Math.min(dp[i-1][j]+1, dp[i][j-1]+1, dp[i-1][j-1]+(a[i-1]===b[j-1]?0:1));
+  return dp[m][n];
+}
+function matchCap(v, cap){
+  const a=norm(v), b=norm(cap);
+  if(!a) return false;
+  return a===b || lev(a,b) <= (b.length>8?2:1);
+}
+function answerWrite(skipped){
+  const q = round.q, win = document.getElementById("win");
+  if(win.disabled) return;
+  const ok = !skipped && matchCap(win.value, q.target[2]);
+  win.disabled = true;
+  win.classList.add(ok?"okw":"badw");
+  if(!ok) win.value = q.target[2].toUpperCase();
+  document.getElementById("wok").disabled = true;
+  document.getElementById("wskip").disabled = true;
+  const p = settle(ok, 16);
+  if(ok) flyMi(win.parentElement, p);
+  afterAnswer(ok);
 }
 function advance(){
   if(!canAdvance) return;
@@ -1122,15 +1425,22 @@ function advance(){
   nextQuestion();
 }
 document.addEventListener("pointerdown", e=>{
-  if(canAdvance && !e.target.closest?.(".back")) advance();
+  if(canAdvance && !e.target.closest?.(".back") && !e.target.closest?.(".writebox")) advance();
 });
 function results(){
   S.rondas++;
+  const r = round, perfect = r.hits===r.len;
+  if(perfect) S.flags.perfect = true;
+  let dailyBonus = 0;
+  if(r.daily){
+    dailyBonus = 50; S.millas += 50;
+    S.dayStreak = (S.lastDaily===localDate(-1)) ? (S.dayStreak||0)+1 : 1;
+    S.lastDaily = localDate(); S.dailyHits = r.hits;
+  }
   const prevRank = S.lastRank, ri = rankIdx(S.millas);
   const rankUp = ri > prevRank;
   S.lastRank = ri; save();
-  const r = round, perfect = r.hits===QS_PER_ROUND;
-  const m = MODES.find(x=>x.id===r.modeId);
+  const modeName = r.daily ? "VUELO DEL DÍA" : r.forced ? "REPASO" : (MODES.find(x=>x.id===r.modeId)?.n || "MIXTO");
   app.innerHTML = `
     <div class="qtop"><button class="back" id="back">← TERMINAL</button></div>
     <div class="pass">
@@ -1143,12 +1453,12 @@ function results(){
         <span>${RCODE[S.region]}<small>${S.region==="all"?"MUNDO":R[S.region]}</small></span>
       </div>
       <div class="pbody">
-        <div class="stamp ${r.hits>=7?"ok":"meh"}">${perfect?"PERFECTO":r.hits>=7?"APTO":"EN PRÁCTICAS"}</div>
+        <div class="stamp ${r.hits>=r.len*.7?"ok":"meh"}">${perfect?"PERFECTO":r.hits>=r.len*.7?"APTO":"EN PRÁCTICAS"}</div>
         <div class="pgrid">
-          <div><div class="plabel">ACIERTOS</div><div class="pval">${r.hits}<small> / ${QS_PER_ROUND}</small></div></div>
+          <div><div class="plabel">ACIERTOS</div><div class="pval">${r.hits}<small> / ${r.len}</small></div></div>
           <div><div class="plabel">MEJOR RACHA</div><div class="pval">×${r.maxStreak}</div></div>
-          <div><div class="plabel">MILLAS GANADAS</div><div class="pval">+${fmt(r.gained)}</div></div>
-          <div><div class="plabel">RUTA</div><div class="pval" style="font-size:13px;line-height:2">${esc(m.n)}</div></div>
+          <div><div class="plabel">MILLAS GANADAS</div><div class="pval">+${fmt(r.gained+dailyBonus)}${dailyBonus?`<small> (+${dailyBonus} BONUS)</small>`:""}</div></div>
+          <div><div class="plabel">RUTA</div><div class="pval" style="font-size:13px;line-height:2">${esc(modeName)}</div></div>
         </div>
       </div>
       <div class="perf"></div>
@@ -1156,15 +1466,76 @@ function results(){
     </div>
     <div class="resbtns">
       <button class="bigbtn" id="toHome">TERMINAL</button>
-      <button class="bigbtn amber" id="again">OTRA RONDA</button>
-    </div>`;
+      ${r.daily?"":`<button class="bigbtn amber" id="again">OTRA RONDA</button>`}
+    </div>
+    <button class="ghostbtn" id="share">📤 COMPARTIR TARJETA</button>`;
   document.getElementById("back").onclick = home;
   document.getElementById("toHome").onclick = home;
-  document.getElementById("again").onclick = ()=>startRound(r.modeId);
+  const again = document.getElementById("again");
+  if(again) again.onclick = ()=> r.forced ? startRound("mix",{forced:r.forced}) : startRound(r.modeId);
+  document.getElementById("share").onclick = ()=>sharePass(r, modeName, perfect);
   setTimeout(thud, REDUCED?0:500);
   if(perfect){ setTimeout(confetti, 600); setTimeout(perfectJingle, 650); }
-  else if(r.hits>=7) setTimeout(()=>paChime([783.99,659.25]), 700);
+  else if(r.hits>=r.len*.7) setTimeout(()=>paChime([783.99,659.25]), 700);
   if(rankUp) setTimeout(()=>rankScene(ri, ()=>{}), 1500);
+  checkBadges(rankUp?4200:2200);
+}
+
+/* ---------- compartir tarjeta (canvas → Web Share) ---------- */
+async function sharePass(r, modeName, perfect){
+  const cv=document.createElement("canvas"); cv.width=1080; cv.height=680;
+  const g=cv.getContext("2d");
+  g.fillStyle="#F2EDE0"; g.fillRect(0,0,1080,680);
+  const grd=g.createLinearGradient(0,0,0,110);
+  grd.addColorStop(0,"#FFD976"); grd.addColorStop(1,"#F5B92B");
+  g.fillStyle=grd; g.fillRect(0,0,1080,110);
+  g.fillStyle="#3A2E08"; g.font="700 34px Menlo,monospace";
+  g.fillText("TARJETA DE EMBARQUE", 40, 68);
+  g.textAlign="right"; g.fillText(`GEO-${String(Math.floor(S.rondas)).padStart(3,"0")}`, 1040, 68);
+  g.textAlign="left";
+  const disp="600 60px 'Avenir Next Condensed','Roboto Condensed',Arial";
+  g.fillStyle="#20242B"; g.font=disp;
+  g.fillText("HUB", 40, 205);
+  g.textAlign="right"; g.fillText(RCODE[S.region], 1040, 205); g.textAlign="left";
+  g.strokeStyle="#B9B4A4"; g.setLineDash([10,8]); g.lineWidth=3;
+  g.beginPath(); g.moveTo(180,185); g.lineTo(490,185); g.moveTo(590,185); g.lineTo(900,185); g.stroke();
+  g.setLineDash([]);
+  g.save(); g.translate(540,185); g.fillStyle="#20242B";
+  g.beginPath(); g.moveTo(-30,10); g.lineTo(34,0); g.lineTo(-30,-10); g.lineTo(-18,0); g.closePath(); g.fill();
+  g.restore();
+  const cells=[["ACIERTOS",`${r.hits} / ${r.len}`],["MEJOR RACHA",`×${r.maxStreak}`],
+               ["MILLAS GANADAS",`+${fmt(r.gained)}`],["RUTA",modeName]];
+  cells.forEach(([lab,val],i)=>{
+    const x=40+(i%2)*520, y=300+Math.floor(i/2)*110;
+    g.fillStyle="#8A8676"; g.font="20px Menlo,monospace"; g.fillText(lab,x,y);
+    g.fillStyle="#20242B"; g.font="700 44px Menlo,monospace"; g.fillText(val,x,y+50);
+  });
+  const stampTxt = perfect?"PERFECTO":r.hits>=r.len*.7?"APTO":"EN PRÁCTICAS";
+  const stampCol = r.hits>=r.len*.7?"#2E8B57":"#B0533B";
+  g.save(); g.translate(860,300); g.rotate(-.18);
+  g.strokeStyle=stampCol; g.lineWidth=7; g.globalAlpha=.85;
+  g.strokeRect(-160,-52,320,104);
+  g.fillStyle=stampCol; g.font="700 42px Menlo,monospace"; g.textAlign="center";
+  g.fillText(stampTxt,0,15); g.restore(); g.globalAlpha=1; g.textAlign="left";
+  g.strokeStyle="#B9B4A4"; g.setLineDash([12,10]); g.lineWidth=3;
+  g.beginPath(); g.moveTo(20,540); g.lineTo(1060,540); g.stroke(); g.setLineDash([]);
+  g.fillStyle="#20242B";
+  let x=40;
+  while(x<870){ const w=2+Math.random()*6; g.fillRect(x,565,w,70); x+=w+2+Math.random()*7; }
+  g.fillStyle="#8A8676"; g.font="22px Menlo,monospace";
+  g.textAlign="right"; g.fillText("TERMINAL MUNDO", 1040, 600);
+  g.font="16px Menlo,monospace"; g.fillText("gavilanbe.github.io/terminal-mundo", 1040, 628);
+  g.textAlign="left";
+  const blob = await new Promise(res=>cv.toBlob(res,"image/png"));
+  const file = new File([blob], "tarjeta-embarque.png", {type:"image/png"});
+  try{
+    if(navigator.canShare && navigator.canShare({files:[file]})){
+      await navigator.share({files:[file], title:"Terminal Mundo"});
+    }else{
+      const a=document.createElement("a");
+      a.href=URL.createObjectURL(blob); a.download="tarjeta-embarque.png"; a.click();
+    }
+  }catch(e){}
 }
 
 /* ---------- pasaporte ---------- */
@@ -1176,6 +1547,12 @@ function passport(){
     const dom = cs.filter(c=>isDom(c[0])).length;
     return {id,name,cs,dom};
   });
+  const weak = DATA.filter(c=>seen(c[0]))
+    .map(c=>({c, score:domScore(c[0])}))
+    .filter(w=>w.score<6)
+    .sort((a,b)=>a.score-b.score)
+    .slice(0,8);
+  const got = BADGES.filter(([id])=>S.badges[id]).length;
   app.innerHTML = `
     <div class="qtop"><button class="back" id="back">← TERMINAL</button><span class="prog">PASAPORTE</span><span></span></div>
     <div class="rankcard sheen">
@@ -1183,11 +1560,27 @@ function passport(){
       <div class="rankname"><small>LICENCIA DE PILOTO</small>${RANKS[ri][1]}</div>
       <div class="ranknext">RONDAS <b style="color:var(--amber)">${S.rondas}</b></div>
     </div>
-    <div class="statstrip" style="margin:2px 2px 18px">
+    <div class="statstrip" style="margin:2px 2px 14px">
       <span>MILLAS <b>${fmt(S.millas)}</b></span>
       <span>RÉCORD <b>×${S.best}</b></span>
-      <span>SELLOS <b>${DATA.filter(c=>isDom(c[0])).length}</b></span>
+      <span>DÍAS <b>🔥${S.dayStreak}</b></span>
+      <span>SELLOS <b>${domCount()}</b></span>
     </div>
+    ${weak.length?`
+      <div class="secline"><h2>ZONA DE TURBULENCIAS</h2><span>LO QUE MÁS FALLAS</span></div>
+      <div class="turb">${weak.map(w=>`
+        <div class="turbrow">
+          <span class="tf">${flag(w.c[0])}</span>
+          <span>${esc(w.c[1].toUpperCase())}<br><span class="tc">${esc(w.c[2].toUpperCase())}</span></span>
+          <span class="tl">${[0,1,2].map(i=>`<i class="${w.score>i*3?"on":""}"></i>`).join("")}</span>
+        </div>`).join("")}
+      </div>
+      <button class="bigbtn amber" style="width:100%" id="turbBtn">✈ REPASAR TURBULENCIAS</button>`:""}
+    <div class="secline"><h2>INSIGNIAS</h2><span>${got} / ${BADGES.length}</span></div>
+    <div class="badges">${BADGES.map(([id,emo,nom])=>`
+      <div class="badge${S.badges[id]?" got":""}"><i>${emo}</i><span>${nom}</span></div>`).join("")}
+    </div>
+    <div class="secline"><h2>SELLOS POR REGIÓN</h2></div>
     ${regs.map(r=>`
       <div class="regrow">
         <div class="rl"><b>${r.name}</b><span>${r.dom} / ${r.cs.length} DOMINADOS</span></div>
@@ -1200,6 +1593,8 @@ function passport(){
       </div>`).join("")}
     <button class="danger" id="reset">BORRAR PROGRESO</button>`;
   document.getElementById("back").onclick = home;
+  const tb = document.getElementById("turbBtn");
+  if(tb) tb.onclick = ()=>startRound("mix", {forced:weak.map(w=>w.c[0])});
   app.querySelectorAll(".fcell").forEach(b=>b.onclick=()=>{
     const c = DATA.find(x=>x[0]===b.dataset.iso);
     showPeek(`${flag(c[0])} <b>${esc(c[1])}</b> · ${esc(c[2])}`);
@@ -1207,7 +1602,9 @@ function passport(){
   const rst = document.getElementById("reset");
   rst.onclick = ()=>{
     if(rst.classList.contains("armed")){
-      S.millas=0; S.best=0; S.rondas=0; S.stats={}; S.lastRank=0; save(); passport();
+      S.millas=0; S.best=0; S.rondas=0; S.stats={}; S.lastRank=0;
+      S.badges={}; S.lastDaily=""; S.dayStreak=0; S.dailyHits=-1; S.flags={};
+      save(); passport();
     }else{
       rst.classList.add("armed");
       rst.textContent = "PULSA OTRA VEZ PARA CONFIRMAR";
@@ -1230,6 +1627,13 @@ sndbtn.onclick = ()=>{ S.sound=!S.sound; save(); paintSnd(); if(S.sound) tick();
 paintSnd();
 
 if("serviceWorker" in navigator && location.protocol!=="file:"){
+  let hadCtrl = !!navigator.serviceWorker.controller, reloadedOnce = false;
+  navigator.serviceWorker.addEventListener("controllerchange", ()=>{
+    if(!hadCtrl){ hadCtrl = true; return; }         /* primera instalación: no recargar */
+    if(reloadedOnce) return; reloadedOnce = true;
+    if(round){ pendingReload = true; showPeek("🔄 <b>NUEVA VERSIÓN LISTA</b> · SE APLICARÁ AL VOLVER"); }
+    else location.reload();
+  });
   addEventListener("load", async ()=>{
     try{
       const reg = await navigator.serviceWorker.register("sw.js", {updateViaCache:"none"});
