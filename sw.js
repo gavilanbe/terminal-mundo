@@ -1,4 +1,4 @@
-const V = "tm-v2";
+const V = "tm-v3";
 const SHELL = [
   "./",
   "./index.html",
@@ -22,6 +22,15 @@ self.addEventListener("activate", e => {
 
 self.addEventListener("fetch", e => {
   if (e.request.method !== "GET" || !e.request.url.startsWith(self.location.origin)) return;
+  // navegaciones: caché primero y, si no, index.html — la app abre siempre, con o sin red
+  if (e.request.mode === "navigate") {
+    e.respondWith(
+      caches.match(e.request, { ignoreSearch: true })
+        .then(hit => hit || caches.match("./index.html"))
+        .then(hit => hit || fetch(e.request))
+    );
+    return;
+  }
   e.respondWith(
     caches.match(e.request, { ignoreSearch: true }).then(hit =>
       hit ||
