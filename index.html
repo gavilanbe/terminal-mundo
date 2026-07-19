@@ -663,35 +663,91 @@ function epaulHTML(i){
   return `<span class="epaul">${"<i></i>".repeat(g)}${star?'<i class="star">★</i>':""}</span>`;
 }
 
-/* ============ AUDIO ============ */
-let AC=null;
-function ac(){ if(!AC) AC = new (window.AudioContext||window.webkitAudioContext)(); return AC; }
-function blip(freq,dur,type,gain,when=0){
+/* ============ AUDIO: terminal de aeropuerto, 100% sintetizado ============ */
+let AC=null, MASTER=null, WET=null, NOISE=null;
+function ac(){
+  if(!AC){
+    AC = new (window.AudioContext||window.webkitAudioContext)();
+    const comp = AC.createDynamicsCompressor();
+    comp.threshold.value=-18; comp.knee.value=22; comp.ratio.value=5;
+    comp.connect(AC.destination);
+    MASTER = AC.createGain(); MASTER.gain.value=.65; MASTER.connect(comp);
+    /* reverb de hall: impulso de ruido estéreo con caída exponencial */
+    const rdur=1.9, rlen=AC.sampleRate*rdur, imp=AC.createBuffer(2,rlen,AC.sampleRate);
+    for(let ch=0;ch<2;ch++){ const d=imp.getChannelData(ch);
+      for(let i=0;i<rlen;i++) d[i]=(Math.random()*2-1)*Math.pow(1-i/rlen,2.7); }
+    const cv=AC.createConvolver(); cv.buffer=imp;
+    WET = AC.createGain(); WET.gain.value=.4; WET.connect(cv); cv.connect(MASTER);
+    /* ruido blanco reutilizable */
+    const nlen=AC.sampleRate*2, nb=AC.createBuffer(1,nlen,AC.sampleRate), nd=nb.getChannelData(0);
+    for(let i=0;i<nlen;i++) nd[i]=Math.random()*2-1;
+    NOISE = nb;
+  }
+  if(AC.state==="suspended") AC.resume();
+  return AC;
+}
+document.addEventListener("pointerdown", ()=>{ if(AC && AC.state==="suspended") AC.resume(); }, {passive:true});
+
+function tone({f=440,f2=0,type="sine",t=0,a=.005,d=.25,g=.06,wet=0,glideTo=0}){
   if(!S.sound) return;
   try{
-    const c=ac(), o=c.createOscillator(), g=c.createGain(), t=c.currentTime+when;
-    o.type=type; o.frequency.value=freq; o.connect(g); g.connect(c.destination);
-    g.gain.setValueAtTime(gain,t); g.gain.exponentialRampToValueAtTime(.0001,t+dur);
-    o.start(t); o.stop(t+dur+.02);
+    const c=ac(), o=c.createOscillator(), gn=c.createGain(), t0=c.currentTime+t;
+    o.type=type; o.frequency.setValueAtTime(f,t0);
+    if(glideTo) o.frequency.exponentialRampToValueAtTime(glideTo,t0+d);
+    gn.gain.setValueAtTime(0,t0);
+    gn.gain.linearRampToValueAtTime(g,t0+a);
+    gn.gain.exponentialRampToValueAtTime(.0001,t0+d);
+    o.connect(gn); gn.connect(MASTER);
+    if(wet){ const s=c.createGain(); s.gain.value=wet; gn.connect(s); s.connect(WET); }
+    o.start(t0); o.stop(t0+d+.05);
+    if(f2) tone({f:f2,type,t,a,d:d*.85,g:g*.3,wet});
   }catch(e){}
 }
-function whoosh(dur=1.4){
+function noise({t=0,dur=.1,g=.06,type="bandpass",f=1000,fEnd=0,q=.9,wet=0,swell=0}){
   if(!S.sound) return;
   try{
-    const c=ac(), n=c.sampleRate*dur, buf=c.createBuffer(1,n,c.sampleRate), d=buf.getChannelData(0);
-    for(let i=0;i<n;i++) d[i]=(Math.random()*2-1)*Math.min(1,i/(n*.4))*(1-i/n);
-    const src=c.createBufferSource(); src.buffer=buf;
-    const f=c.createBiquadFilter(); f.type="bandpass"; f.frequency.setValueAtTime(280,c.currentTime);
-    f.frequency.exponentialRampToValueAtTime(1500,c.currentTime+dur*.7); f.Q.value=.8;
-    const g=c.createGain(); g.gain.value=.13;
-    src.connect(f); f.connect(g); g.connect(c.destination); src.start();
+    const c=ac(), t0=c.currentTime+t;
+    const src=c.createBufferSource(); src.buffer=NOISE; src.loop=true;
+    src.playbackRate.value=.9+Math.random()*.2;
+    const fl=c.createBiquadFilter(); fl.type=type; fl.Q.value=q;
+    fl.frequency.setValueAtTime(f,t0);
+    if(fEnd) fl.frequency.exponentialRampToValueAtTime(fEnd,t0+dur);
+    const gn=c.createGain();
+    gn.gain.setValueAtTime(0,t0);
+    gn.gain.linearRampToValueAtTime(g, t0+(swell?dur*.35:.008));
+    if(swell) gn.gain.setValueAtTime(g, t0+dur*.75);
+    gn.gain.exponentialRampToValueAtTime(.0001, t0+dur);
+    src.connect(fl); fl.connect(gn); gn.connect(MASTER);
+    if(wet){ const s=c.createGain(); s.gain.value=wet; gn.connect(s); s.connect(WET); }
+    src.start(t0, Math.random()*1.2); src.stop(t0+dur+.05);
   }catch(e){}
 }
-const tick = ()=> blip(2400,.014,"square",.013);
-const good = ()=> { blip(660,.09,"square",.05); blip(990,.14,"square",.05,.09); };
-const bad  = ()=> blip(160,.22,"sawtooth",.06);
-const thud = ()=> { blip(75,.15,"sine",.22); blip(2000,.02,"square",.03); };
-const fanfare = ()=> { blip(523,.1,"square",.05); blip(659,.1,"square",.05,.11); blip(784,.12,"square",.05,.22); blip(1047,.25,"square",.06,.33); };
+/* — vocabulario sonoro de la terminal — */
+const tick = ()=> noise({dur:.013,g:.04,type:"highpass",f:1700+Math.random()*1100});      // clack de lamela
+const good = (streak=1)=>{                                                                 // campanita que sube con la racha
+  const f = 587.33*Math.pow(2, Math.min(streak-1,7)/12);
+  tone({f,f2:f*2,d:.38,g:.07,wet:.5});
+  tone({f:f*1.5,t:.08,d:.3,g:.03,wet:.5});
+  noise({dur:.05,g:.018,type:"highpass",f:6500});
+};
+const bad = ()=>{                                                                          // acceso denegado
+  tone({f:215,glideTo:125,type:"sawtooth",d:.3,g:.055});
+  tone({f:66,t:.02,d:.22,g:.12});
+};
+const paChime = (notes=[659.25,523.25])=>                                                  // megafonía bing-bong
+  notes.forEach((f,i)=> tone({f,f2:f*2,type:"triangle",t:i*.3,a:.01,d:.75,g:.05,wet:1}));
+const turbine = (up=true)=>{                                                               // reactor por capas
+  noise({dur:1.7,g:.15,type:"bandpass",f:up?260:1500,fEnd:up?1650:300,q:.8,swell:1});
+  tone({f:up?68:112,glideTo:up?118:62,type:"sawtooth",d:1.65,g:.05});
+  tone({f:up?420:1250,glideTo:up?1350:420,d:1.6,g:.016});
+  if(!up){ tone({f:58,t:1.05,d:.18,g:.17}); noise({dur:.15,g:.05,type:"highpass",f:900,t:1.05}); } // ruedas
+};
+const thud = ()=>{ tone({f:72,d:.16,g:.22}); noise({dur:.05,g:.07,type:"lowpass",f:1100}); };       // sello
+const selloDing = ()=> tone({f:880,f2:1760,d:.65,g:.05,wet:1.2});                          // aviso de cinturones
+const fanfare = ()=>                                                                       // ascenso de rango
+  [523.25,659.25,783.99,1046.5].forEach((f,i)=> tone({f,f2:f*2,type:"triangle",t:i*.13,d:i===3?.9:.3,g:.055,wet:.8}));
+const perfectJingle = ()=>                                                                 // ronda perfecta
+  [587.33,739.99,880,1174.66,1479.98].forEach((f,i)=> tone({f,type:"triangle",t:i*.11,d:.55,g:.05,wet:.9}));
 
 /* ============ SPLIT-FLAP 3D ============ */
 const REDUCED = matchMedia("(prefers-reduced-motion: reduce)").matches;
@@ -818,7 +874,8 @@ function flightScene(kind, eyebrow, title, done){
     </div>
     <div class="ovlplane">${PLANE}<span class="beacon"></span><span class="contrail"></span></div>
     <div class="rwy"></div>`;
-  whoosh();
+  if(kind==="takeoff") paChime();
+  turbine(kind==="takeoff");
   ovlT = setTimeout(()=>{ ovl.className=""; ovl.innerHTML=""; done(); }, 1800);
 }
 function rankScene(i, done){
@@ -1021,8 +1078,8 @@ function answer(i){
   info.classList.add("show");
   const altEl = document.getElementById("alt");
   if(ok){
-    good();
     round.hits++; round.streak++;
+    good(round.streak);
     round.maxStreak = Math.max(round.maxStreak, round.streak);
     S.best = Math.max(S.best, round.streak);
     const pts = 10 + round.streak*2;
@@ -1060,7 +1117,7 @@ function advance(){
   if(round.newDom.length){
     const c = round.newDom.shift();
     showPeek(`🛂 SELLO NUEVO · ${flag(c[0])} <b>${esc(c[1].toUpperCase())}</b>`, true);
-    thud();
+    selloDing();
   }
   nextQuestion();
 }
@@ -1105,8 +1162,8 @@ function results(){
   document.getElementById("toHome").onclick = home;
   document.getElementById("again").onclick = ()=>startRound(r.modeId);
   setTimeout(thud, REDUCED?0:500);
-  if(perfect) setTimeout(confetti, 600);
-  if(r.hits>=7) good();
+  if(perfect){ setTimeout(confetti, 600); setTimeout(perfectJingle, 650); }
+  else if(r.hits>=7) setTimeout(()=>paChime([783.99,659.25]), 700);
   if(rankUp) setTimeout(()=>rankScene(ri, ()=>{}), 1500);
 }
 
