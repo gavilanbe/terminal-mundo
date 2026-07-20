@@ -289,7 +289,7 @@ main{
 
 /* mapa mudo */
 .mapwrap{position:relative;z-index:1}
-#mapcv{width:100%;height:262px;display:block;border-radius:10px;
+#mapcv{width:100%;height:min(320px,82vw);display:block;border-radius:10px;
   background:linear-gradient(#0C1118,#0A0E14);
   box-shadow:inset 0 0 0 1px #1E252E, inset 0 2px 12px rgba(0,0,0,.6)}
 .maphint{font-size:9px;letter-spacing:.25em;color:var(--mute);text-align:center;margin-top:8px}
@@ -698,61 +698,179 @@ function geoCentroid(iso){
   for(let i=0;i<ring.length;i+=2){ sx+=ring[i]; sy+=ring[i+1]; }
   return [sx/n, sy/n];
 }
-function drawMap(cv, q, st){
+/* --- motor del mapa: cámara animada, glow y radar --- */
+const easeIO = t => t<.5 ? 2*t*t : 1-Math.pow(-2*t+2,2)/2;
+const lerpView = (a,b,t) => a.map((v,i)=>v+(b[i]-v)*t);
+function expandView(m,f){
+  const cx=(m[0]+m[2])/2, cy=(m[1]+m[3])/2;
+  const dx=Math.max((m[2]-m[0])/2*f,.6), dy=Math.max((m[3]-m[1])/2*f,.6);
+  return [cx-dx,cy-dy,cx+dx,cy+dy];
+}
+function mapViewFor(opts){
+  let m=[1e9,1e9,-1e9,-1e9];
+  for(const c of opts){ const b=geoBBox(c[0]);
+    m[0]=Math.min(m[0],b[0]); m[1]=Math.min(m[1],b[1]); m[2]=Math.max(m[2],b[2]); m[3]=Math.max(m[3],b[3]); }
+  m=expandView(m,1.25);
+  /* alcance mínimo para no pegarse a los bordes */
+  const minS=6;
+  if(m[2]-m[0]<minS){ const cx=(m[0]+m[2])/2; m[0]=cx-minS/2; m[2]=cx+minS/2; }
+  if(m[3]-m[1]<minS){ const cy=(m[1]+m[3])/2; m[1]=cy-minS/2; m[3]=cy+minS/2; }
+  return m;
+}
+function focusView(iso){
+  let b = expandView(geoBBox(iso), 3.2);
+  const minS=8;
+  if(b[2]-b[0]<minS) b=[(b[0]+b[2])/2-minS/2, b[1], (b[0]+b[2])/2+minS/2, b[3]];
+  if(b[3]-b[1]<minS) b=[b[0], (b[1]+b[3])/2-minS/2, b[2], (b[1]+b[3])/2+minS/2];
+  return b;
+}
+function renderFrame(cv, q, st, m, fx={}){
   if(!GEO) return;
-  const dpr=devicePixelRatio||1, W=cv.clientWidth, H=cv.clientHeight;
+  const dpr=devicePixelRatio||1, W=cv.clientWidth||330, H=cv.clientHeight||300;
   cv.width=W*dpr; cv.height=H*dpr;
   const g=cv.getContext("2d"); g.scale(dpr,dpr);
-  let m=[1e9,1e9,-1e9,-1e9];
-  for(const c of q.opts){ const b=geoBBox(c[0]);
-    m[0]=Math.min(m[0],b[0]); m[1]=Math.min(m[1],b[1]); m[2]=Math.max(m[2],b[2]); m[3]=Math.max(m[3],b[3]); }
-  let dx=m[2]-m[0], dy=m[3]-m[1];
-  m[0]-=dx*.12+2; m[2]+=dx*.12+2; m[1]-=dy*.14+2; m[3]+=dy*.14+2;
-  dx=m[2]-m[0]; dy=m[3]-m[1];
+  const dx=m[2]-m[0], dy=m[3]-m[1];
   const midLat=(m[1]+m[3])/2, kx=Math.max(.25,Math.cos(midLat*Math.PI/180));
   const sc=Math.min(W/(dx*kx), H/dy);
   const ox=(W-dx*kx*sc)/2, oy=(H-dy*sc)/2;
   const X=lon=>ox+(lon-m[0])*kx*sc, Y=lat=>oy+(m[3]-lat)*sc;
   cv.__proj={X,Y,invX:x=>(x-ox)/(kx*sc)+m[0], invY:y=>m[3]-(y-oy)/sc};
+  const base = fx.alpha ?? 1;
   g.clearRect(0,0,W,H);
-  /* graticula radar */
-  g.strokeStyle="rgba(61,220,132,.06)"; g.lineWidth=1;
+  g.globalAlpha = base;
+  /* graticula */
+  g.strokeStyle="rgba(61,220,132,.07)"; g.lineWidth=1;
   for(let lon=Math.ceil(m[0]/15)*15; lon<m[2]; lon+=15){ g.beginPath(); g.moveTo(X(lon),0); g.lineTo(X(lon),H); g.stroke(); }
   for(let lat=Math.ceil(m[1]/15)*15; lat<m[3]; lat+=15){ g.beginPath(); g.moveTo(0,Y(lat)); g.lineTo(W,Y(lat)); g.stroke(); }
   const candSet=new Set(q.opts.map(c=>c[0]));
-  const drawIso=(iso,fill,stroke,lw)=>{
-    const ps=GEO.polys[iso]; if(!ps) return;
+  const tracePath=(iso)=>{
+    const ps=GEO.polys[iso];
     g.beginPath();
     for(const ring of ps){ g.moveTo(X(ring[0]),Y(ring[1]));
       for(let i=2;i<ring.length;i+=2) g.lineTo(X(ring[i]),Y(ring[i+1]));
       g.closePath(); }
-    g.fillStyle=fill; g.fill(); g.strokeStyle=stroke; g.lineWidth=lw; g.stroke();
   };
-  for(const iso of Object.keys(GEO.polys)) if(!candSet.has(iso)) drawIso(iso,"#1D242D","#2A333E",1);
+  /* fondo con halo de costa */
+  for(const iso of Object.keys(GEO.polys)){
+    if(candSet.has(iso)) continue;
+    tracePath(iso);
+    g.strokeStyle="rgba(110,150,190,.07)"; g.lineWidth=3; g.stroke();
+    g.fillStyle="#1E2630"; g.fill();
+    g.strokeStyle="#2C3641"; g.lineWidth=1; g.stroke();
+  }
+  /* candidatos con glow */
   cv.__small=[];
   q.opts.forEach((c,i)=>{
     const iso=c[0];
     const isAns=st.answered && iso===q.target[0];
     const isBad=st.answered && iso===st.picked && iso!==q.target[0];
-    const fill=isAns?"rgba(61,217,126,.42)":isBad?"rgba(242,85,85,.42)":"rgba(255,197,61,.28)";
-    const stroke=isAns?"#3DD97E":isBad?"#F25555":"#FFC53D";
+    const dimmed=st.answered && !isAns && !isBad;
+    const fill=isAns?"rgba(61,217,126,.45)":isBad?"rgba(242,85,85,.45)":`rgba(255,197,61,${dimmed?.10:.30})`;
+    const stroke=isAns?"#3DD97E":isBad?"#F25555":dimmed?"rgba(255,197,61,.35)":"#FFC53D";
+    const glow=isAns?"rgba(61,217,126,.7)":isBad?"rgba(242,85,85,.6)":"rgba(255,197,61,.55)";
     const b=geoBBox(iso);
     const small=!GEO.polys[iso] || ((b[2]-b[0])*kx*sc<26 && (b[3]-b[1])*sc<26);
     cv.__small[i]=small;
     if(small){
-      const [lo,la]=geoCentroid(iso);
-      g.beginPath(); g.arc(X(lo),Y(la),11,0,7);
-      g.fillStyle=fill; g.fill(); g.strokeStyle=stroke; g.lineWidth=2; g.stroke();
-    } else drawIso(iso,fill,stroke,2);
+      /* diana de radar */
+      const [lo,la]=geoCentroid(iso), x=X(lo), y=Y(la);
+      g.shadowColor=dimmed?"transparent":glow; g.shadowBlur=12;
+      g.beginPath(); g.arc(x,y,11,0,7); g.fillStyle=fill; g.fill();
+      g.shadowBlur=0;
+      g.strokeStyle=stroke; g.lineWidth=2; g.stroke();
+      g.beginPath();
+      [[0,-1],[0,1],[-1,0],[1,0]].forEach(([vx,vy])=>{ g.moveTo(x+vx*8,y+vy*8); g.lineTo(x+vx*14,y+vy*14); });
+      g.stroke();
+      g.beginPath(); g.arc(x,y,1.6,0,7); g.fillStyle=stroke; g.fill();
+    }else{
+      tracePath(iso);
+      g.shadowColor=dimmed?"transparent":glow; g.shadowBlur=14;
+      g.fillStyle=fill; g.fill();
+      g.shadowBlur=0;
+      g.strokeStyle=stroke; g.lineWidth=2; g.stroke();
+    }
   });
-  if(st.answered){
-    const [lo,la]=geoCentroid(q.target[0]);
-    g.font="600 13px 'Avenir Next Condensed','Roboto Condensed',Arial,sans-serif";
-    const t=q.target[1].toUpperCase(), tw=g.measureText(t).width;
-    const tx=Math.min(Math.max(X(lo)-tw/2,4),W-tw-4), ty=Math.max(Y(la)-16,14);
-    g.fillStyle="rgba(11,14,17,.85)"; g.fillRect(tx-5,ty-11,tw+10,17);
-    g.fillStyle="#EFEADB"; g.fillText(t,tx,ty+2);
+  /* pings de radar sobre el objetivo */
+  if(fx.pings && fx.pings.length){
+    const [lo,la]=geoCentroid(q.target[0]), x=X(lo), y=Y(la);
+    for(const p of fx.pings){
+      g.globalAlpha = base*(1-p.t)*.85;
+      g.strokeStyle="#3DD97E"; g.lineWidth=2;
+      g.beginPath(); g.arc(x,y,8+p.t*46,0,7); g.stroke();
+    }
+    g.globalAlpha = base;
   }
+  /* etiqueta */
+  if(st.answered && (fx.labelAlpha??1)>0){
+    g.globalAlpha = base*(fx.labelAlpha??1);
+    const [lo,la]=geoCentroid(q.target[0]);
+    g.font="600 14px 'Avenir Next Condensed','Roboto Condensed',Arial,sans-serif";
+    const t=q.target[1].toUpperCase(), tw=g.measureText(t).width;
+    const tx=Math.min(Math.max(X(lo)-tw/2,4),W-tw-4), ty=Math.max(Y(la)-18,15);
+    g.fillStyle="rgba(11,14,17,.88)"; g.fillRect(tx-6,ty-12,tw+12,19);
+    g.strokeStyle="rgba(61,217,126,.5)"; g.lineWidth=1; g.strokeRect(tx-6,ty-12,tw+12,19);
+    g.fillStyle="#EFEADB"; g.fillText(t,tx,ty+2);
+    g.globalAlpha = base;
+  }
+  /* escaneo de entrada */
+  if(fx.scan!=null){
+    const x=fx.scan*W;
+    const gr=g.createLinearGradient(x-46,0,x,0);
+    gr.addColorStop(0,"rgba(61,220,132,0)"); gr.addColorStop(1,"rgba(61,220,132,.18)");
+    g.fillStyle=gr; g.fillRect(x-46,0,46,H);
+    g.strokeStyle="rgba(61,220,132,.5)"; g.lineWidth=1;
+    g.beginPath(); g.moveTo(x,0); g.lineTo(x,H); g.stroke();
+  }
+  g.globalAlpha = 1;
+  /* barra de escala */
+  const kmPx=111.32/sc;
+  for(const km of [100,200,300,500,1000,2000,4000]){
+    const px=km/kmPx;
+    if(px>=54 && px<=140){
+      g.strokeStyle="rgba(239,234,219,.45)"; g.lineWidth=1;
+      g.beginPath(); g.moveTo(12,H-12); g.lineTo(12+px,H-12);
+      g.moveTo(12,H-16); g.lineTo(12,H-8); g.moveTo(12+px,H-16); g.lineTo(12+px,H-8); g.stroke();
+      g.fillStyle="rgba(239,234,219,.5)"; g.font="9px Menlo,monospace";
+      g.fillText(`${km} KM`, 16, H-17);
+      break;
+    }
+  }
+  /* norte */
+  g.fillStyle="rgba(239,234,219,.4)"; g.font="700 10px Menlo,monospace";
+  g.fillText("N", W-16, 20);
+  g.beginPath(); g.moveTo(W-12.5,8); g.lineTo(W-9,13); g.lineTo(W-16,13); g.closePath(); g.fill();
+  /* viñeta */
+  const vg=g.createRadialGradient(W/2,H/2,Math.min(W,H)*.45,W/2,H/2,Math.max(W,H)*.72);
+  vg.addColorStop(0,"rgba(0,0,0,0)"); vg.addColorStop(1,"rgba(0,0,0,.32)");
+  g.fillStyle=vg; g.fillRect(0,0,W,H);
+}
+function mapEnter(cv, q){
+  const fin = mapViewFor(q.opts);
+  cv.__view = fin;
+  tone({f:1240,d:.3,g:.025,wet:1.4});                     /* ping de radar */
+  if(REDUCED){ renderFrame(cv,q,{answered:false},fin,{}); return; }
+  const from = expandView(fin,1.35), t0=performance.now(), D=700;
+  requestAnimationFrame(function fr(now){
+    if(!cv.isConnected) return;
+    const t=Math.min(1,(now-t0)/D), e=easeIO(t);
+    cv.__view = lerpView(from,fin,e);
+    renderFrame(cv,q,{answered:false},cv.__view,{alpha:.35+t*.65, scan:t<1?t:null});
+    if(t<1) requestAnimationFrame(fr);
+  });
+}
+function mapAnswer(cv, q, picked){
+  const st={answered:true, picked};
+  const from = cv.__view || mapViewFor(q.opts);
+  const to = focusView(q.target[0]);
+  if(REDUCED){ renderFrame(cv,q,st,to,{labelAlpha:1}); return; }
+  const t0=performance.now(), D=900;
+  requestAnimationFrame(function fr(now){
+    if(!cv.isConnected) return;
+    const t=Math.min(1,(now-t0)/D), e=easeIO(t);
+    const pings=[0,.25,.5].map(off=>{ const pt=t*1.3-off; return (pt>0&&pt<.75)?{t:pt/.75}:null; }).filter(Boolean);
+    renderFrame(cv,q,st,lerpView(from,to,e),{pings, labelAlpha:Math.max(0,(t-.35)/.65)});
+    if(t<1) requestAnimationFrame(fr);
+  });
 }
 function hitMap(cv,q,px,py){
   const {X,Y,invX,invY}=cv.__proj;
@@ -1301,7 +1419,7 @@ function renderQuestion(){
   }
   if(isMapQ){
     const cv = document.getElementById("mapcv");
-    requestAnimationFrame(()=>drawMap(cv, q, {answered:false}));
+    requestAnimationFrame(()=>mapEnter(cv, q));
     let done=false;
     cv.addEventListener("click", e=>{
       if(done) return;
@@ -1380,7 +1498,7 @@ function answer(i){
 }
 function answerMap(idx, cv){
   const q = round.q, ok = idx===q.answer;
-  drawMap(cv, q, {answered:true, picked:q.opts[idx][0]});
+  mapAnswer(cv, q, q.opts[idx][0]);
   const p = settle(ok, 12);
   if(ok) flyMi(cv.parentElement, p);
   afterAnswer(ok);

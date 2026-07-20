@@ -1,4 +1,4 @@
-const V = "tm-v5";
+const V = "tm-v6";
 const SHELL = [
   "./",
   "./index.html",

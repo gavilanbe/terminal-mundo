@@ -35,8 +35,15 @@ sube 1.000 ft, un fallo te devuelve a pista.
 - 🌍 **195 países** con nombre y capital en castellano, agrupados en 5
   continentes filtrables. La bandera es el emoji derivado del código ISO —
   ni una sola imagen en todo el juego.
-- 🎫 **4 puertas de embarque**: bandera → país, país → capital, capital → país
-  y vuelo mixto.
+- 🎫 **6 puertas de embarque**: bandera → país, país → capital, capital → país,
+  **mapa mudo** (toca el país en un mapa canvas con cámara animada, glow y
+  pings de radar — geometría Natural Earth 50m simplificada a 322 KB),
+  **escribe la capital** (con tolerancia a tildes y typos) y vuelo mixto.
+- ☀️ **Vuelo del día**: ruta sorpresa con semilla diaria (la misma para todo el
+  mundo), bonus de millas y racha de días 🔥.
+- 🏅 **16 insignias**, **zona de turbulencias** (repasa lo que más fallas) y
+  **repaso espaciado**: lo aprendido caduca si no lo revisitas, estilo Anki.
+- 📤 **Comparte tu tarjeta de embarque** como imagen desde la app.
 - 🧠 **Repaso ponderado**: cada país guarda un nivel 0–3 por modo; lo que
   fallas vuelve a salir enseguida y lo dominado casi desaparece. Los
   distractores son siempre de la misma región (te enfrentará los dos Congos,
