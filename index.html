@@ -291,8 +291,16 @@ main{
 .mapwrap{position:relative;z-index:1}
 #mapcv{width:100%;height:min(320px,82vw);display:block;border-radius:10px;
   background:linear-gradient(#0C1118,#0A0E14);
-  box-shadow:inset 0 0 0 1px #1E252E, inset 0 2px 12px rgba(0,0,0,.6)}
+  box-shadow:inset 0 0 0 1px #1E252E, inset 0 2px 12px rgba(0,0,0,.6);
+  touch-action:none;cursor:crosshair}
 .maphint{font-size:9px;letter-spacing:.25em;color:var(--mute);text-align:center;margin-top:8px}
+.mapzoom{position:absolute;right:8px;bottom:40px;display:flex;flex-direction:column;gap:6px;z-index:2}
+.mapzoom button{
+  width:40px;height:40px;border-radius:9px;font-size:20px;font-weight:700;line-height:1;
+  color:var(--amber);background:rgba(16,19,23,.85);border:1px solid #2A323D;
+  box-shadow:0 2px 8px rgba(0,0,0,.5);
+}
+.mapzoom button:active{transform:translateY(1px);background:rgba(255,197,61,.15)}
 
 /* modo escrito */
 .writebox{position:relative;z-index:1;margin-top:14px}
@@ -735,6 +743,7 @@ function renderFrame(cv, q, st, m, fx={}){
   const ox=(W-dx*kx*sc)/2, oy=(H-dy*sc)/2;
   const X=lon=>ox+(lon-m[0])*kx*sc, Y=lat=>oy+(m[3]-lat)*sc;
   cv.__proj={X,Y,invX:x=>(x-ox)/(kx*sc)+m[0], invY:y=>m[3]-(y-oy)/sc};
+  cv.__scale={kx,sc};
   const base = fx.alpha ?? 1;
   g.clearRect(0,0,W,H);
   g.globalAlpha = base;
@@ -769,7 +778,7 @@ function renderFrame(cv, q, st, m, fx={}){
     const stroke=isAns?"#3DD97E":isBad?"#F25555":dimmed?"rgba(255,197,61,.35)":"#FFC53D";
     const glow=isAns?"rgba(61,217,126,.7)":isBad?"rgba(242,85,85,.6)":"rgba(255,197,61,.55)";
     const b=geoBBox(iso);
-    const small=!GEO.polys[iso] || ((b[2]-b[0])*kx*sc<26 && (b[3]-b[1])*sc<26);
+    const small=!GEO.polys[iso] || ((b[2]-b[0])*kx*sc<16 && (b[3]-b[1])*sc<16);
     cv.__small[i]=small;
     if(small){
       /* diana de radar */
@@ -846,17 +855,112 @@ function renderFrame(cv, q, st, m, fx={}){
 }
 function mapEnter(cv, q){
   const fin = mapViewFor(q.opts);
-  cv.__view = fin;
+  cv.__view = fin; cv.__view0 = fin;
   tone({f:1240,d:.3,g:.025,wet:1.4});                     /* ping de radar */
   if(REDUCED){ renderFrame(cv,q,{answered:false},fin,{}); return; }
   const from = expandView(fin,1.35), t0=performance.now(), D=700;
   requestAnimationFrame(function fr(now){
-    if(!cv.isConnected) return;
+    if(!cv.isConnected || cv.__gestActive || cv.__answered) return;
     const t=Math.min(1,(now-t0)/D), e=easeIO(t);
     cv.__view = lerpView(from,fin,e);
     renderFrame(cv,q,{answered:false},cv.__view,{alpha:.35+t*.65, scan:t<1?t:null});
     if(t<1) requestAnimationFrame(fr);
   });
+}
+/* gestos: pellizco = zoom, arrastre = mover, toque corto = responder */
+function mapGestures(cv, q, onPick){
+  const st = {ptrs:new Map(), pan0:null, pinch0:null, moved:false, t0:0};
+  cv.__answered = false;
+  const hint = document.getElementById("maphint");
+  const paint = ()=>{
+    if(cv.__paintPend) return;
+    cv.__paintPend = true;
+    requestAnimationFrame(()=>{
+      cv.__paintPend = false;
+      if(!cv.isConnected || cv.__answered) return;
+      renderFrame(cv, q, {answered:false}, cv.__view, {});
+      if(hint) hint.textContent = cv.__small.some(Boolean)
+        ? "OBJETIVO PEQUEÑO A LA VISTA · AMPLÍA CON ± O PELLIZCO"
+        : "TOCA EL PAÍS · ARRASTRA PARA MOVERTE";
+    });
+  };
+  const clampSpans = (dx,dy)=>{
+    const v0=cv.__view0, maxDx=(v0[2]-v0[0])*2.2, minDx=1.1;
+    let k=1;
+    if(dx>maxDx) k=maxDx/dx;
+    if(dx*k<minDx) k=minDx/dx;
+    return [dx*k, dy*k];
+  };
+  const panClamp = ()=>{
+    const v=cv.__view, v0=cv.__view0;
+    const cx=(v[0]+v[2])/2, cy=(v[1]+v[3])/2;
+    const c0x=(v0[0]+v0[2])/2, c0y=(v0[1]+v0[3])/2;
+    const lx=(v0[2]-v0[0])*.9, ly=(v0[3]-v0[1])*.9;
+    const sx=Math.max(c0x-lx,Math.min(c0x+lx,cx))-cx;
+    const sy=Math.max(c0y-ly,Math.min(c0y+ly,cy))-cy;
+    if(sx||sy){ v[0]+=sx; v[2]+=sx; v[1]+=sy; v[3]+=sy; }
+  };
+  const zoomFrom = (view, f, gx, gy)=>{
+    let [dx,dy]=clampSpans((view[2]-view[0])*f,(view[3]-view[1])*f);
+    const rx=(gx-view[0])/(view[2]-view[0]), ry=(gy-view[1])/(view[3]-view[1]);
+    cv.__view=[gx-rx*dx, gy-ry*dy, gx-rx*dx+dx, gy-ry*dy+dy];
+    panClamp(); paint();
+  };
+  cv.__zoomBtn = f=>{
+    if(cv.__answered) return;
+    const v=cv.__view;
+    zoomFrom(v, f, (v[0]+v[2])/2, (v[1]+v[3])/2);
+  };
+  cv.addEventListener("pointerdown", e=>{
+    if(cv.__answered) return;
+    try{ cv.setPointerCapture(e.pointerId); }catch(_){}
+    st.ptrs.set(e.pointerId, {x:e.clientX, y:e.clientY});
+    cv.__gestActive = true;
+    if(st.ptrs.size===1){
+      st.moved=false; st.t0=performance.now();
+      st.pan0={x:e.clientX, y:e.clientY, view:[...cv.__view]};
+      st.pinch0=null;
+    }else if(st.ptrs.size===2){
+      const [a,b]=[...st.ptrs.values()];
+      const r=cv.getBoundingClientRect(), mx=(a.x+b.x)/2, my=(a.y+b.y)/2;
+      st.pinch0={d:Math.hypot(a.x-b.x,a.y-b.y), view:[...cv.__view],
+                 geo:[cv.__proj.invX(mx-r.left), cv.__proj.invY(my-r.top)]};
+      st.pan0=null; st.moved=true;
+    }
+  });
+  cv.addEventListener("pointermove", e=>{
+    if(cv.__answered || !st.ptrs.has(e.pointerId)) return;
+    st.ptrs.set(e.pointerId, {x:e.clientX, y:e.clientY});
+    if(st.ptrs.size===1 && st.pan0){
+      const dxp=e.clientX-st.pan0.x, dyp=e.clientY-st.pan0.y;
+      if(Math.abs(dxp)+Math.abs(dyp)>8) st.moved=true;
+      if(st.moved && cv.__scale){
+        const {kx,sc}=cv.__scale, v=st.pan0.view;
+        const dLon=-dxp/(kx*sc), dLat=dyp/sc;
+        cv.__view=[v[0]+dLon, v[1]+dLat, v[2]+dLon, v[3]+dLat];
+        panClamp(); paint();
+      }
+    }else if(st.ptrs.size===2 && st.pinch0){
+      const [a,b]=[...st.ptrs.values()];
+      const d=Math.hypot(a.x-b.x, a.y-b.y);
+      if(d>12) zoomFrom(st.pinch0.view, st.pinch0.d/d, st.pinch0.geo[0], st.pinch0.geo[1]);
+    }
+  });
+  const up = e=>{
+    if(!st.ptrs.has(e.pointerId)) return;
+    const wasSingle = st.ptrs.size===1;
+    st.ptrs.delete(e.pointerId);
+    if(!st.ptrs.size) cv.__gestActive = false;
+    if(cv.__answered) return;
+    if(wasSingle && !st.moved && performance.now()-st.t0<500){
+      const r=cv.getBoundingClientRect();
+      const idx=hitMap(cv, q, e.clientX-r.left, e.clientY-r.top);
+      if(idx>=0){ cv.__answered=true; onPick(idx); }
+    }
+    st.pan0=null; st.pinch0=null;
+  };
+  cv.addEventListener("pointerup", up);
+  cv.addEventListener("pointercancel", up);
 }
 function mapAnswer(cv, q, picked){
   const st={answered:true, picked};
@@ -1370,7 +1474,9 @@ function renderQuestion(){
   const isFlagQ = q.mode==="flag", isMapQ = q.mode==="map", isWriteQ = q.mode==="write";
   const middle =
     isFlagQ ? `<div class="flagbig">${flag(q.target[0])}</div>` :
-    isMapQ  ? `<div class="mapwrap"><canvas id="mapcv"></canvas><div class="maphint">TOCA EL PAÍS EN EL MAPA</div></div>` :
+    isMapQ  ? `<div class="mapwrap"><canvas id="mapcv"></canvas>
+                 <div class="mapzoom"><button id="mzin" aria-label="Acercar">＋</button><button id="mzout" aria-label="Alejar">－</button></div>
+                 <div class="maphint" id="maphint">TOCA EL PAÍS · PELLIZCA O ± PARA AMPLIAR</div></div>` :
               `<div class="flapbox" id="flap"></div>`;
   app.innerHTML = `
     <div class="qtop">
@@ -1420,15 +1526,9 @@ function renderQuestion(){
   if(isMapQ){
     const cv = document.getElementById("mapcv");
     requestAnimationFrame(()=>mapEnter(cv, q));
-    let done=false;
-    cv.addEventListener("click", e=>{
-      if(done) return;
-      const r=cv.getBoundingClientRect();
-      const idx=hitMap(cv, q, e.clientX-r.left, e.clientY-r.top);
-      if(idx<0) return;
-      done=true;
-      answerMap(idx, cv);
-    });
+    mapGestures(cv, q, idx=>answerMap(idx, cv));
+    document.getElementById("mzin").onclick = ()=>cv.__zoomBtn(0.62);
+    document.getElementById("mzout").onclick = ()=>cv.__zoomBtn(1.6);
   }
   if(isWriteQ){
     const win=document.getElementById("win");
@@ -1498,6 +1598,7 @@ function answer(i){
 }
 function answerMap(idx, cv){
   const q = round.q, ok = idx===q.answer;
+  cv.__answered = true;
   mapAnswer(cv, q, q.opts[idx][0]);
   const p = settle(ok, 12);
   if(ok) flyMi(cv.parentElement, p);
